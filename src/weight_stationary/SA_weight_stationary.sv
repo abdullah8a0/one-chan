@@ -8,7 +8,7 @@ module SA_WS_conv #(
     parameter SA_COL = 3,
     parameter DATA_WIDTH = 8,
     parameter PSUM_WIDTH = 19,
-    parameter VECTOR_LENGTH = 8,
+    parameter VECTOR_LENGTH = 8
 )(
     input wire clk,
     input wire nrst,
@@ -60,16 +60,16 @@ module SA_WS_conv #(
                 PE_weight_stationary#(
                     .IFMAP_WIDTH        ( 8 ),
                     .WEIGHT_WIDTH       ( 8 ),
-                    .ACCUMULATION_WIDTH ( 4 ),
+                    .ACCUMULATION_WIDTH ( 4 )
                 )u_PE_weight_stationary(
                     .clk       ( clk              ),
                     .nrst      ( nrst             ),
-                    .ifmap_i   ( ifmap_w[i][j]    ),
-                    .psum_i    ( psum_w[i][j]     ),
-                    .weight_i  ( weight_w[i][j]   ),
+                    .ifmap_i   ( ifmap_w[r][c]    ),
+                    .psum_i    ( psum_w[r][c]     ),
+                    .weight_i  ( weight_w[r][c]   ),
                     .pe_en     ( sa_iv            ),
-                    .ifmap_o   ( ifmap_w[i][j+1]  ),
-                    .psum_o    ( psum_w[i+1][j]   ) 
+                    .ifmap_o   ( ifmap_w[r][c+1]  ),
+                    .psum_o    ( psum_w[r+1][c]   ) 
                 );
 
             end

@@ -1,0 +1,785 @@
+$date
+	Tue Nov 08 17:37:38 2022
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tb_ws_layer $end
+$var wire 1 ! sa_ov $end
+$var wire 1 " reLU_ov $end
+$var wire 8 # reLU_od [7:0] $end
+$var wire 19 $ psum_o2 [18:0] $end
+$var wire 19 % psum_o1 [18:0] $end
+$var wire 19 & psum_o0 [18:0] $end
+$var wire 57 ' psum_o [56:0] $end
+$var wire 1 ( biased_ov $end
+$var wire 8 ) biased_od [7:0] $end
+$var parameter 32 * DATA_WIDTH $end
+$var parameter 35 + LATENCY $end
+$var parameter 32 , PSUM_WIDTH $end
+$var parameter 32 - SA_COL $end
+$var parameter 32 . SA_ROW $end
+$var parameter 32 / VECTOR_LENGTH $end
+$var reg 1 0 clk $end
+$var reg 1 1 nrst $end
+$var reg 24 2 row_A_i [23:0] $end
+$var reg 1 3 sa_iv $end
+$scope module u_SA_WS_conv $end
+$var wire 1 0 clk $end
+$var wire 1 1 nrst $end
+$var wire 24 4 row_A_i [23:0] $end
+$var wire 1 3 sa_iv $end
+$var wire 72 5 weight_w [71:0] $end
+$var wire 1 ! sa_ov $end
+$var wire 228 6 psum_w [227:0] $end
+$var wire 57 7 psum_o [56:0] $end
+$var wire 96 8 ifmap_w [95:0] $end
+$var parameter 32 9 DATA_WIDTH $end
+$var parameter 35 : LATENCY $end
+$var parameter 32 ; LATE_WIDTH $end
+$var parameter 32 < PSUM_WIDTH $end
+$var parameter 32 = SA_COL $end
+$var parameter 32 > SA_ROW $end
+$var parameter 32 ? VECTOR_LENGTH $end
+$var reg 4 @ sa_cnt [3:0] $end
+$scope begin R[0] $end
+$var parameter 2 A r $end
+$scope begin C[0] $end
+$var parameter 2 B c $end
+$scope module u_PE_weight_stationary $end
+$var wire 1 0 clk $end
+$var wire 8 C ifmap_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 3 pe_en $end
+$var wire 20 D psum_i [19:0] $end
+$var wire 8 E weight_i [7:0] $end
+$var wire 20 F psum_o [19:0] $end
+$var wire 8 G ifmap_o [7:0] $end
+$var parameter 32 H ACCUMULATION_WIDTH $end
+$var parameter 32 I IFMAP_WIDTH $end
+$var parameter 34 J PSUM_WIDTH $end
+$var parameter 32 K WEIGHT_WIDTH $end
+$var reg 8 L ifmap_r [7:0] $end
+$var reg 20 M psum_r [19:0] $end
+$upscope $end
+$upscope $end
+$scope begin C[1] $end
+$var parameter 2 N c $end
+$scope module u_PE_weight_stationary $end
+$var wire 1 0 clk $end
+$var wire 8 O ifmap_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 3 pe_en $end
+$var wire 20 P psum_i [19:0] $end
+$var wire 8 Q weight_i [7:0] $end
+$var wire 20 R psum_o [19:0] $end
+$var wire 8 S ifmap_o [7:0] $end
+$var parameter 32 T ACCUMULATION_WIDTH $end
+$var parameter 32 U IFMAP_WIDTH $end
+$var parameter 34 V PSUM_WIDTH $end
+$var parameter 32 W WEIGHT_WIDTH $end
+$var reg 8 X ifmap_r [7:0] $end
+$var reg 20 Y psum_r [19:0] $end
+$upscope $end
+$upscope $end
+$scope begin C[2] $end
+$var parameter 3 Z c $end
+$scope module u_PE_weight_stationary $end
+$var wire 1 0 clk $end
+$var wire 8 [ ifmap_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 3 pe_en $end
+$var wire 20 \ psum_i [19:0] $end
+$var wire 8 ] weight_i [7:0] $end
+$var wire 20 ^ psum_o [19:0] $end
+$var wire 8 _ ifmap_o [7:0] $end
+$var parameter 32 ` ACCUMULATION_WIDTH $end
+$var parameter 32 a IFMAP_WIDTH $end
+$var parameter 34 b PSUM_WIDTH $end
+$var parameter 32 c WEIGHT_WIDTH $end
+$var reg 8 d ifmap_r [7:0] $end
+$var reg 20 e psum_r [19:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope begin R[1] $end
+$var parameter 2 f r $end
+$scope begin C[0] $end
+$var parameter 2 g c $end
+$scope module u_PE_weight_stationary $end
+$var wire 1 0 clk $end
+$var wire 8 h ifmap_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 3 pe_en $end
+$var wire 20 i psum_i [19:0] $end
+$var wire 8 j weight_i [7:0] $end
+$var wire 20 k psum_o [19:0] $end
+$var wire 8 l ifmap_o [7:0] $end
+$var parameter 32 m ACCUMULATION_WIDTH $end
+$var parameter 32 n IFMAP_WIDTH $end
+$var parameter 34 o PSUM_WIDTH $end
+$var parameter 32 p WEIGHT_WIDTH $end
+$var reg 8 q ifmap_r [7:0] $end
+$var reg 20 r psum_r [19:0] $end
+$upscope $end
+$upscope $end
+$scope begin C[1] $end
+$var parameter 2 s c $end
+$scope module u_PE_weight_stationary $end
+$var wire 1 0 clk $end
+$var wire 8 t ifmap_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 3 pe_en $end
+$var wire 20 u psum_i [19:0] $end
+$var wire 8 v weight_i [7:0] $end
+$var wire 20 w psum_o [19:0] $end
+$var wire 8 x ifmap_o [7:0] $end
+$var parameter 32 y ACCUMULATION_WIDTH $end
+$var parameter 32 z IFMAP_WIDTH $end
+$var parameter 34 { PSUM_WIDTH $end
+$var parameter 32 | WEIGHT_WIDTH $end
+$var reg 8 } ifmap_r [7:0] $end
+$var reg 20 ~ psum_r [19:0] $end
+$upscope $end
+$upscope $end
+$scope begin C[2] $end
+$var parameter 3 !" c $end
+$scope module u_PE_weight_stationary $end
+$var wire 1 0 clk $end
+$var wire 8 "" ifmap_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 3 pe_en $end
+$var wire 20 #" psum_i [19:0] $end
+$var wire 8 $" weight_i [7:0] $end
+$var wire 20 %" psum_o [19:0] $end
+$var wire 8 &" ifmap_o [7:0] $end
+$var parameter 32 '" ACCUMULATION_WIDTH $end
+$var parameter 32 (" IFMAP_WIDTH $end
+$var parameter 34 )" PSUM_WIDTH $end
+$var parameter 32 *" WEIGHT_WIDTH $end
+$var reg 8 +" ifmap_r [7:0] $end
+$var reg 20 ," psum_r [19:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope begin R[2] $end
+$var parameter 3 -" r $end
+$scope begin C[0] $end
+$var parameter 2 ." c $end
+$scope module u_PE_weight_stationary $end
+$var wire 1 0 clk $end
+$var wire 8 /" ifmap_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 3 pe_en $end
+$var wire 20 0" psum_i [19:0] $end
+$var wire 8 1" weight_i [7:0] $end
+$var wire 20 2" psum_o [19:0] $end
+$var wire 8 3" ifmap_o [7:0] $end
+$var parameter 32 4" ACCUMULATION_WIDTH $end
+$var parameter 32 5" IFMAP_WIDTH $end
+$var parameter 34 6" PSUM_WIDTH $end
+$var parameter 32 7" WEIGHT_WIDTH $end
+$var reg 8 8" ifmap_r [7:0] $end
+$var reg 20 9" psum_r [19:0] $end
+$upscope $end
+$upscope $end
+$scope begin C[1] $end
+$var parameter 2 :" c $end
+$scope module u_PE_weight_stationary $end
+$var wire 1 0 clk $end
+$var wire 8 ;" ifmap_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 3 pe_en $end
+$var wire 20 <" psum_i [19:0] $end
+$var wire 8 =" weight_i [7:0] $end
+$var wire 20 >" psum_o [19:0] $end
+$var wire 8 ?" ifmap_o [7:0] $end
+$var parameter 32 @" ACCUMULATION_WIDTH $end
+$var parameter 32 A" IFMAP_WIDTH $end
+$var parameter 34 B" PSUM_WIDTH $end
+$var parameter 32 C" WEIGHT_WIDTH $end
+$var reg 8 D" ifmap_r [7:0] $end
+$var reg 20 E" psum_r [19:0] $end
+$upscope $end
+$upscope $end
+$scope begin C[2] $end
+$var parameter 3 F" c $end
+$scope module u_PE_weight_stationary $end
+$var wire 1 0 clk $end
+$var wire 8 G" ifmap_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 3 pe_en $end
+$var wire 20 H" psum_i [19:0] $end
+$var wire 8 I" weight_i [7:0] $end
+$var wire 20 J" psum_o [19:0] $end
+$var wire 8 K" ifmap_o [7:0] $end
+$var parameter 32 L" ACCUMULATION_WIDTH $end
+$var parameter 32 M" IFMAP_WIDTH $end
+$var parameter 34 N" PSUM_WIDTH $end
+$var parameter 32 O" WEIGHT_WIDTH $end
+$var reg 8 P" ifmap_r [7:0] $end
+$var reg 20 Q" psum_r [19:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope begin genblk1[0] $end
+$var parameter 2 R" row $end
+$upscope $end
+$scope begin genblk1[1] $end
+$var parameter 2 S" row $end
+$upscope $end
+$scope begin genblk1[2] $end
+$var parameter 3 T" row $end
+$upscope $end
+$scope begin genblk2[0] $end
+$var parameter 2 U" col $end
+$upscope $end
+$scope begin genblk2[1] $end
+$var parameter 2 V" col $end
+$upscope $end
+$scope begin genblk2[2] $end
+$var parameter 3 W" col $end
+$upscope $end
+$scope module u_weight_kernel_conv0 $end
+$var wire 72 X" weight_o [71:0] $end
+$var parameter 32 Y" KERNEL_HEIGHT $end
+$var parameter 32 Z" KERNEL_WIDTH $end
+$var parameter 32 [" WEIGHT_WIDTH $end
+$upscope $end
+$upscope $end
+$scope module u_bias_adder $end
+$var wire 1 ! bias_adder_iv $end
+$var wire 1 0 clk $end
+$var wire 1 1 nrst $end
+$var wire 57 \" psum_i [56:0] $end
+$var wire 1 ]" psum_sv $end
+$var wire 19 ^" psum_sd_shifted [18:0] $end
+$var wire 19 _" psum_sd [18:0] $end
+$var parameter 8 `" BIAS $end
+$var parameter 32 a" DATA_WIDTH $end
+$var parameter 32 b" PSUM_WIDTH $end
+$var parameter 32 c" SA_COL $end
+$var reg 8 d" biased_od [7:0] $end
+$var reg 1 ( biased_ov $end
+$scope module u_multiport_adder $end
+$var wire 1 0 clk $end
+$var wire 1 1 nrst $end
+$var wire 57 e" port_id [56:0] $end
+$var wire 1 ! port_iv $end
+$var wire 19 f" sum_r1 [18:0] $end
+$var wire 19 g" sum_r0 [18:0] $end
+$var wire 1 ]" sum_ov $end
+$var wire 19 h" sum_od [18:0] $end
+$var parameter 32 i" WIDTH $end
+$var reg 19 j" port_id_pipe [18:0] $end
+$var reg 2 k" port_iv_pipe [1:0] $end
+$var reg 38 l" sum_r [37:0] $end
+$upscope $end
+$upscope $end
+$scope module u_reLU $end
+$var wire 1 0 clk $end
+$var wire 8 m" neuron_i [7:0] $end
+$var wire 1 1 nrst $end
+$var wire 1 ( reLU_iv $end
+$var parameter 32 n" DATA_WIDTH $end
+$var reg 8 o" reLU_od [7:0] $end
+$var reg 1 " reLU_ov $end
+$upscope $end
+$scope begin $ivl_for_loop0 $end
+$var integer 32 p" i [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1000 n"
+b10011 i"
+b11 c"
+b10011 b"
+b1000 a"
+b1010 `"
+b1000 ["
+b11 Z"
+b11 Y"
+b10 W"
+b1 V"
+b0 U"
+b10 T"
+b1 S"
+b0 R"
+b1000 O"
+b10100 N"
+b1000 M"
+b100 L"
+b10 F"
+b1000 C"
+b10100 B"
+b1000 A"
+b100 @"
+b1 :"
+b1000 7"
+b10100 6"
+b1000 5"
+b100 4"
+b0 ."
+b10 -"
+b1000 *"
+b10100 )"
+b1000 ("
+b100 '"
+b10 !"
+b1000 |
+b10100 {
+b1000 z
+b100 y
+b1 s
+b1000 p
+b10100 o
+b1000 n
+b100 m
+b0 g
+b1 f
+b1000 c
+b10100 b
+b1000 a
+b100 `
+b10 Z
+b1000 W
+b10100 V
+b1000 U
+b100 T
+b1 N
+b1000 K
+b10100 J
+b1000 I
+b100 H
+b0 B
+b0 A
+b1000 ?
+b11 >
+b11 =
+b10011 <
+b100 ;
+b1101 :
+b1000 9
+b1000 /
+b11 .
+b11 -
+b10011 ,
+b1101 +
+b1000 *
+$end
+#0
+$dumpvars
+b11 p"
+b0 o"
+b0 m"
+b0 l"
+b0 k"
+b0 j"
+b0 h"
+b0 g"
+b0 f"
+b0 e"
+b0 d"
+b0 _"
+b0 ^"
+0]"
+b0 \"
+b1000000010000000100000001000000010000000100000001000000010000000100000 X"
+b0 Q"
+b0 P"
+b0 K"
+b0 J"
+b100000 I"
+b0 H"
+b0 G"
+b0 E"
+b0 D"
+b0 ?"
+b0 >"
+b100000 ="
+b0 <"
+b0 ;"
+b0 9"
+b0 8"
+b0 3"
+b0 2"
+b100000 1"
+b0 0"
+b0 /"
+b0 ,"
+b0 +"
+b0 &"
+b0 %"
+b100000 $"
+b0 #"
+b0 ""
+b0 ~
+b0 }
+b0 x
+b0 w
+b100000 v
+b0 u
+b0 t
+b0 r
+b0 q
+b0 l
+b0 k
+b100000 j
+b0 i
+b0 h
+b0 e
+b0 d
+b0 _
+b0 ^
+b100000 ]
+b0 \
+b0 [
+b0 Y
+b0 X
+b0 S
+b0 R
+b100000 Q
+b0 P
+b0 O
+b0 M
+b0 L
+b0 G
+b0 F
+b100000 E
+b0 D
+b0 C
+b0 @
+b0 8
+b0 7
+b0 6
+b1000000010000000100000001000000010000000100000001000000010000000100000 5
+b0 4
+03
+b0 2
+01
+10
+b0 )
+0(
+b0 '
+b0 &
+b0 %
+b0 $
+b0 #
+0"
+0!
+$end
+#1000
+11
+#5000
+00
+#10000
+10
+#15000
+00
+#20000
+10
+#25000
+00
+#30000
+10
+#31000
+b11 C
+b11 8
+b11 2
+b11 4
+13
+#35000
+00
+#40000
+b1100000 i
+b1100000000000000000000000000000000000000000000000000000000000000 6
+b11 O
+b1100000 F
+b1100000 M
+b1100000011 8
+b11 G
+b11 L
+b1 @
+10
+#41000
+b10 h
+b1000000000000000000000001100000011 8
+b1000000011 2
+b1000000011 4
+#45000
+00
+#50000
+b10100000 0"
+b1100000 u
+b10 t
+b11 [
+b10100000000000000000000000000000000000011000000000000000001100000000000000000000000000000000000000000000000000000000000000 6
+b10 @
+b10 l
+b10 q
+b10100000 k
+b10100000 r
+b100000001000000000000000110000001100000011 8
+b11 S
+b11 X
+b1100000 R
+b1100000 Y
+10
+#51000
+b1 /"
+b10000000000000000000000100000001000000000000000110000001100000011 8
+b10000001000000011 2
+b10000001000000011 4
+#55000
+00
+#60000
+b11000000 &
+b1100000 #"
+b10100000 <"
+b11000000 '
+b11000000 7
+b11000000 \"
+b11000000 e"
+b10 ""
+b11000000000000000000000000000000000000101000000000000000010100000000000000000110000000000000000011000000000000000001100000000000000000000000000000000000000000000000000000000000000 6
+b1 ;"
+b1100000 ^
+b1100000 e
+b11 _
+b11 d
+b10100000 w
+b10100000 ~
+b10 x
+b10 }
+b11000000 2"
+b11000000 9"
+b1000000010000000000000010000000100000001000000011000000110000001100000011 8
+b1 3"
+b1 8"
+b11 @
+10
+#65000
+00
+#70000
+b11000000 %
+b110000000000000000011000000 '
+b110000000000000000011000000 7
+b110000000000000000011000000 \"
+b110000000000000000011000000 e"
+b10100000 H"
+b1 G"
+b110000000000000000011000000000000000001010000000000000000101000000000000000010100000000000000000110000000000000000011000000000000000001100000000000000000000000000000000000000000000000000000000000000 6
+b100 @
+b1 ?"
+b1 D"
+b11000000 >"
+b11000000 E"
+b100000001000000010000001000000010000000100000001000000011000000110000001100000011 8
+b10 &"
+b10 +"
+b10100000 %"
+b10100000 ,"
+10
+#75000
+00
+#80000
+b11000000 $
+b1100000000000000000110000000000000000011000000 '
+b1100000000000000000110000000000000000011000000 7
+b1100000000000000000110000000000000000011000000 \"
+b1100000000000000000110000000000000000011000000 e"
+1!
+b1100000000000000000110000000000000000011000000000000000001010000000000000000101000000000000000010100000000000000000110000000000000000011000000000000000001100000000000000000000000000000000000000000000000000000000000000 6
+b11000000 J"
+b11000000 Q"
+b10000000100000001000000010000001000000010000000100000001000000011000000110000001100000011 8
+b1 K"
+b1 P"
+b101 @
+10
+#85000
+00
+#90000
+b110000000 g"
+b110000000 l"
+b1 k"
+b11000000 j"
+b110 @
+10
+#95000
+00
+#100000
+b100 ^"
+1]"
+b1001000000 _"
+b1001000000 h"
+b1001000000 f"
+b111 @
+b11 k"
+b10010000000000000000110000000 l"
+10
+#105000
+00
+#110000
+b1110 )
+b1110 d"
+b1110 m"
+1(
+b1000 @
+10
+#111000
+b0 C
+b10000000100000001000000010000001000000010000000100000001000000011000000110000001100000000 8
+b10000001000000000 2
+b10000001000000000 4
+#115000
+00
+#120000
+b0 i
+b1100000000000000000110000000000000000011000000000000000001010000000000000000101000000000000000010100000000000000000110000000000000000011000000000000000000000000000000000000000000000000000000000000000000000000000000000 6
+b0 O
+b0 F
+b0 M
+b10000000100000001000000010000001000000010000000100000001000000011000000110000000000000000 8
+b0 G
+b0 L
+b1001 @
+b1110 #
+b1110 o"
+1"
+10
+#121000
+b0 h
+b10000000100000001000000010000001000000010000000100000000000000011000000110000000000000000 8
+b10000000000000000 2
+b10000000000000000 4
+#125000
+00
+#130000
+b0 0"
+b0 u
+b0 t
+b0 [
+b1100000000000000000110000000000000000011000000000000000001010000000000000000101000000000000000000000000000000000000110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 6
+b1010 @
+b0 l
+b0 q
+b0 k
+b0 r
+b10000000100000001000000010000001000000010000000000000000000000011000000000000000000000000 8
+b0 S
+b0 X
+b0 R
+b0 Y
+10
+#131000
+b0 /"
+b10000000100000001000000000000001000000010000000000000000000000011000000000000000000000000 8
+b0 2
+b0 4
+03
+#135000
+00
+#140000
+b0 &
+b0 %
+b0 $
+b0 #"
+b0 <"
+b0 H"
+b0 '
+b0 7
+b0 \"
+b0 e"
+0!
+b0 ""
+b0 ;"
+b0 G"
+b0 6
+b0 ^
+b0 e
+b0 _
+b0 d
+b0 w
+b0 ~
+b0 x
+b0 }
+b0 %"
+b0 ,"
+b0 &"
+b0 +"
+b0 2"
+b0 9"
+b0 3"
+b0 8"
+b0 >"
+b0 E"
+b0 ?"
+b0 D"
+b0 J"
+b0 Q"
+b0 8
+b0 K"
+b0 P"
+b0 @
+10
+#145000
+00
+#150000
+b0 g"
+b10010000000000000000000000000 l"
+b10 k"
+b0 j"
+10
+#155000
+00
+#160000
+b0 ^"
+0]"
+b0 _"
+b0 h"
+b0 f"
+b0 k"
+b0 l"
+10
+#165000
+00
+#170000
+b0 )
+b0 d"
+b0 m"
+0(
+10
+#175000
+00
+#180000
+b0 #
+b0 o"
+0"
+10
+#185000
+00
+#190000
+10
+#195000
+00
+#200000
+10
+#205000
+00
+#210000
+10
+#215000
+00
+#220000
+10
+#225000
+00
+#230000
+10
+#231000
