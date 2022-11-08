@@ -1,0 +1,10 @@
+layers = []
+layers.append((f"conv-{0}", nn.Conv2d(1,1,3)))
+layers.append((f"conv-{1}", nn.Conv2d(1,1,3)))
+layers.append((f"conv-{2}", nn.Conv2d(1,1,(1,3))))
+
+layers.append((f"flatten-{4}", nn.Flatten()))
+layers.append((f"linear-{5}", nn.Linear(8, 8)))
+layers.append((f"relu-{6}", nn.ReLU()))
+
+layers.append((f"linear-{layer_count-1}", nn.Linear(8, 1)))
