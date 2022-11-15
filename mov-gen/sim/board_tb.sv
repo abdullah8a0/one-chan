@@ -3,6 +3,25 @@
 
 
 
+`define print \
+        $display("BOARD:");\
+        for (integer i = 0; i < 64; i = i + 1) begin\
+            piece = data_out[i];\
+            if (i == 10) piece = 9'b11111111;\
+            case (piece[5:0])\
+                EMPTY: $write(". ");\
+                KING: $write("K ");\
+                QUEEN: $write("Q ");\
+                ROOK: $write("R ");\
+                KNIGHT: $write("N ");\
+                BISHOP: $write("B ");\
+                PAWN: $write("P ");\
+                default: $write("X ");\
+            endcase\
+            if (i % 8 == 7) $display("");\
+        end \
+
+
 module board_tb;
     logic clk_in;
     logic rst_in;
@@ -10,7 +29,7 @@ module board_tb;
     logic [2:0] sp;
     stack_mov_t stack_head;
 
-    board_pos_t data_out [63:0] ;
+    logic [8:0] data_out [63:0] ;
 
     parameter EMPTY     = 6'b111111;
     parameter KING      = 6'b000001;
@@ -28,13 +47,14 @@ module board_tb;
         .rst(rst_in),
         .sp(sp),
         .stack_head(stack_head),
-        .board_data(data_out)
+        .board(data_out)
     );
 
     always begin
         #5;
         clk_in = ~clk_in;
     end
+    logic [7:0] piece;
 
 
  
@@ -46,49 +66,47 @@ module board_tb;
         #10;
         rst_in = 1'b0;
         sp = 3'b000;
-        stack_head = {6'b000000, 6'b000000, 4'b0000};
+        stack_head = {6'b000000, 6'b000000, 4'b1111};
 
 
         #50;
         // display initial board
-        $display("BOARD:");
-        for (integer i = 0; i < 64; i = i + 1) begin
-            logic [7:0] piece = data_out[i];
-            case (piece[5:0])
-                EMPTY: $write(". ");
-                KING: $write("K ");
-                QUEEN: $write("Q ");
-                ROOK: $write("R ");
-                KNIGHT: $write("N ");
-                BISHOP: $write("B ");
-                PAWN: $write("P ");
-                default: $write("X ");
-            endcase
-            if (i % 8 == 7) $display("");
-        end
+        // `print
 
         sp = 3'b001;
-        stack_head = {6'b000000, 6'b010010, 4'b0000};
+        stack_head = {6'b000000, 6'b010010, 4'b1111};
         #50;
 
-        // display board after move
-        $display("BOARD:");
-        for (integer i = 0; i < 64; i = i + 1) begin
-            logic [7:0] piece = data_out[i];
-            case (piece[5:0])
-                EMPTY: $write(". ");
-                KING: $write("K ");
-                QUEEN: $write("Q ");
-                ROOK: $write("R ");
-                KNIGHT: $write("N ");
-                BISHOP: $write("B ");
-                PAWN: $write("P ");
-                default: $write("X ");
-            endcase
-            if (i % 8 == 7) $display("");
-        end
-        
+        // `print
 
+        sp = 3'b010;
+        stack_head = {6'b111111, 6'b010010, 4'b0011};
+        #50;
+
+        // `print
+
+        sp = 3'b011;
+        stack_head = {6'b000111, 6'b010010, 4'b0011};
+        #50;
+
+        // `print
+        // now we pop the stack
+
+        sp = 3'b010;
+        stack_head = {6'b111111, 6'b010010, 4'b0011};
+        #50;
+
+        // `print
+
+        sp = 3'b001;
+        stack_head = {6'b000000, 6'b010010, 4'b0011};
+        #50;
+
+
+        // `print
+        sp = 3'b000;
+        stack_head = {6'b000000, 6'b000000, 4'b1111};
+        #50;
 
         #100
         $finish;

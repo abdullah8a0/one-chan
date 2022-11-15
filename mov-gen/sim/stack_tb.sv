@@ -58,24 +58,51 @@ module  stack_tb;
         rst_in = 1'b1;
         #10;
         rst_in = 1'b0;
-        
         #10;
-        push_in = 1'b1;
-        data_in = {6'b000_000,6'b111_000,NONE};
-        
-        #10;
+
         `PRINT_STACK
-        push_in = 1'b1;
-        data_in = {6'b001_001,6'b111_000,PAWN};
+        push_in = 1'b1; 
+        data_in = {6'b000000, 6'b010010, 4'b1111};
         #10;
-        `PRINT_STACK
         push_in = 1'b0;
-        #100
+
+        #50;
+
+        `PRINT_STACK
+        push_in = 1'b1; 
+        data_in = {6'b111111, 6'b010011, 4'b1111};
+        #10;
+        push_in = 1'b0;
+        #50;
+
+        `PRINT_STACK
+        push_in = 1'b1; 
+        data_in = {6'b000111, 6'b010100, 4'b1111};
+        #10;
+        push_in = 1'b0;
+        #50;
+
+        `PRINT_STACK
+
         pop_in = 1'b1;
         #10;
-        `PRINT_STACK
         pop_in = 1'b0;
-        #1000
+        #50;
+
+        `PRINT_STACK
+
+        pop_in = 1'b1;
+        #10;
+        pop_in = 1'b0;
+        #50;
+
+        `PRINT_STACK
+
+        pop_in = 1'b1;
+        #10;
+        pop_in = 1'b0;
+        #50;
+  
         $finish;
     end
 
