@@ -16,6 +16,9 @@ module SA_WS_conv #(
     input wire sa_iv, // activate SA array
     input wire [SA_ROW-1:0][DATA_WIDTH-1:0] row_A_i, // layer input
 
+    // to test simulation, delete the weight_i
+    // input wire [SA_ROW-1:0][SA_COL-1:0][DATA_WIDTH-1:0] weight_i,
+
     output logic sa_ov, //when output is ready
     output logic [SA_COL-1:0][PSUM_WIDTH-1:0] psum_o
 );
@@ -77,7 +80,7 @@ module SA_WS_conv #(
     endgenerate 
 
     // weight assignment
-    weight_kernel_conv0#(
+    weight_kernel_conv#(
         .KERNEL_WIDTH  ( 3 ),
         .KERNEL_HEIGHT ( 3 ),
         .WEIGHT_WIDTH  ( 8 )

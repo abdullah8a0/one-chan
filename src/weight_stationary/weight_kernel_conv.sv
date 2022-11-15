@@ -2,7 +2,7 @@
 `timescale 1ns/1ps
 
 // A:m*l, B:l*n, AB:m*n
-module weight_kernel_conv0 #(
+module weight_kernel_conv #(
     parameter KERNEL_WIDTH = 3,
     parameter KERNEL_HEIGHT = 3,
     parameter WEIGHT_WIDTH = 8
