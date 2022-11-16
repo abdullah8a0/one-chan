@@ -53,7 +53,7 @@ module seven_seg #(parameter COUNT_TO = 'd100_000) (
 
   cto7s mcto7s (.x_in(`piece(routed_vals)), .s_out(led_out));
   assign cat_out = ~led_out; //<--note this inversion is needed
-  assign dot_out = `color(routed_vals) == WHITE ? 1'b0 : 1'b1;
+  assign dot_out = `color(routed_vals) == WHITE ? 1'b1 : 1'b0;
   assign an_out = ~segment_state; //note this inversion is needed
 
   always_ff @(posedge clk)begin

@@ -42,15 +42,15 @@ module top_level(
     input wire btnc,
     input wire btnd,
     input wire btnu,
+    input wire btnr,
 
-    output logic[15:0]    led,
     output logic ca, cb, cc, cd, ce, cf, cg, dp,
     output logic [7:0] an
 );
     logic grst;
     assign grst = btnc;
-    logic clean_down, clean_up;
-    logic old_clean_down, old_clean_up;
+    logic clean_down, clean_up, clean_right;
+    logic old_clean_down, old_clean_up, old_clean_right;
 
     debouncer up_cleaner(
         .clk_in(clk_in),
@@ -66,11 +66,14 @@ module top_level(
         .clean_out(clean_down)
     );
 
-    // for now, bind sw to led
-    assign led[15:3] = sw[15:3];
-    // row is incremented by 1 if btnu is pressed, and decremented by 1 if btnd is pressed
-    logic [2:0] row_ind;
-    assign led[2:0] = row_ind;
+    debouncer right_cleaner(
+        .clk_in(clk_in),
+        .rst_in(grst),
+        .dirty_in(btnr),
+        .clean_out(clean_right)
+    );
+
+
 
     always_ff @(posedge clk_in) begin
         if (grst) begin
@@ -78,14 +81,18 @@ module top_level(
         end else begin
             old_clean_down <= clean_down;
             old_clean_up <= clean_up;
+            old_clean_right <= clean_right;
             // falling edge
             if (old_clean_down && !clean_down) begin
-                row_ind <= row_ind + 3'b001;
-            end else if (old_clean_up && !clean_up) begin
                 row_ind <= row_ind - 3'b001;
-            end
+            end else if (old_clean_up && !clean_up) begin
+                row_ind <= row_ind + 3'b001;
+            end  
         end
     end
+
+
+
     localparam EMPTY     = 6'b111111;
     localparam KING      = 6'b000001;
     localparam QUEEN     = 6'b000010;
@@ -96,86 +103,13 @@ module top_level(
 
     localparam WHITE     = 2'b01;
     localparam BLACK     = 2'b10;
-     
 
-    logic [7:0] INIT_BOARD[63:0];
-        assign INIT_BOARD[0] = {WHITE, ROOK};
-        assign INIT_BOARD[1] = {WHITE, KNIGHT};
-        assign INIT_BOARD[2] = {WHITE, BISHOP};
-        assign INIT_BOARD[3] = {WHITE, QUEEN};
-        assign INIT_BOARD[4] = {WHITE, KING};
-        assign INIT_BOARD[5] = {WHITE, BISHOP};
-        assign INIT_BOARD[6] = {WHITE, KNIGHT};
-        assign INIT_BOARD[7] = {WHITE, ROOK};
-        assign INIT_BOARD[8] = {WHITE, PAWN};
-        assign INIT_BOARD[9] = {WHITE, PAWN};
-        assign INIT_BOARD[10] = {WHITE, PAWN};
-        assign INIT_BOARD[11] = {WHITE, PAWN};
-        assign INIT_BOARD[12] = {WHITE, PAWN};
-        assign INIT_BOARD[13] = {WHITE, PAWN};
-        assign INIT_BOARD[14] = {WHITE, PAWN};
-        assign INIT_BOARD[15] = {WHITE, PAWN};
-        assign INIT_BOARD[16] = {WHITE, EMPTY};
-        assign INIT_BOARD[17] = {WHITE, EMPTY};
-        assign INIT_BOARD[18] = {WHITE, EMPTY};
-        assign INIT_BOARD[19] = {WHITE, EMPTY};
-        assign INIT_BOARD[20] = {WHITE, EMPTY};
-        assign INIT_BOARD[21] = {WHITE, EMPTY};
-        assign INIT_BOARD[22] = {WHITE, EMPTY};
-        assign INIT_BOARD[23] = {WHITE, EMPTY};
-        assign INIT_BOARD[24] = {WHITE, EMPTY};
-        assign INIT_BOARD[25] = {WHITE, EMPTY};
-        assign INIT_BOARD[26] = {WHITE, EMPTY};
-        assign INIT_BOARD[27] = {WHITE, EMPTY};
-        assign INIT_BOARD[28] = {WHITE, EMPTY};
-        assign INIT_BOARD[29] = {WHITE, EMPTY};
-        assign INIT_BOARD[30] = {WHITE, EMPTY};
-        assign INIT_BOARD[31] = {WHITE, EMPTY};
-        assign INIT_BOARD[32] = {WHITE, EMPTY};
-        assign INIT_BOARD[33] = {WHITE, EMPTY};
-        assign INIT_BOARD[34] = {WHITE, EMPTY};
-        assign INIT_BOARD[35] = {WHITE, EMPTY};
-        assign INIT_BOARD[36] = {WHITE, EMPTY};
-        assign INIT_BOARD[37] = {WHITE, EMPTY};
-        assign INIT_BOARD[38] = {WHITE, EMPTY};
-        assign INIT_BOARD[39] = {WHITE, EMPTY};
-        assign INIT_BOARD[40] = {WHITE, EMPTY};
-        assign INIT_BOARD[41] = {WHITE, EMPTY};
-        assign INIT_BOARD[42] = {WHITE, EMPTY};
-        assign INIT_BOARD[43] = {WHITE, EMPTY};
-        assign INIT_BOARD[44] = {WHITE, EMPTY};
-        assign INIT_BOARD[45] = {WHITE, EMPTY};
-        assign INIT_BOARD[46] = {WHITE, EMPTY};
-        assign INIT_BOARD[47] = {WHITE, EMPTY};
-        assign INIT_BOARD[48] = {BLACK, PAWN};
-        assign INIT_BOARD[49] = {BLACK, PAWN};
-        assign INIT_BOARD[50] = {BLACK, PAWN};
-        assign INIT_BOARD[51] = {BLACK, PAWN};
-        assign INIT_BOARD[52] = {BLACK, PAWN};
-        assign INIT_BOARD[53] = {BLACK, PAWN};
-        assign INIT_BOARD[54] = {BLACK, PAWN};
-        assign INIT_BOARD[55] = {BLACK, PAWN};
-        assign INIT_BOARD[56] = {BLACK, ROOK};
-        assign INIT_BOARD[57] = {BLACK, KNIGHT};
-        assign INIT_BOARD[58] = {BLACK, BISHOP};
-        assign INIT_BOARD[59] = {BLACK, QUEEN};
-        assign INIT_BOARD[60] = {BLACK, KING};
-        assign INIT_BOARD[61] = {BLACK, BISHOP};
-        assign INIT_BOARD[62] = {BLACK, KNIGHT};
-        assign INIT_BOARD[63] = {BLACK, ROOK};
-
-
-
-    
-
+    logic [2:0] row_ind;
     logic [7:0] row_to_show [7:0];
 
     logic [7:0] board [63:0];
     always_ff @(posedge clk_in) begin
         if(grst) begin
-            for (int i = 0; i < 64; i++) begin
-                board[i] <= INIT_BOARD[i];
-            end
         end else begin
             for (int i = 0; i < 8; i++) begin
                 row_to_show[i] <= board[row_ind << 3 | i];
@@ -183,7 +117,27 @@ module top_level(
         end
     end
 
-     
+    logic [2:0] _sp;
+    logic [11:0] _stack_head;
+
+    board_rep board_inst (
+        .clk(clk_in),
+        .rst(grst),
+        .sp(_sp),
+        .stack_head({_stack_head, 4'b0000}),
+        .board(board)
+    );
+
+    always_ff @(posedge clk_in) begin
+        if (old_clean_right && !clean_right) begin
+           _sp = sw[15:13];
+           _stack_head = sw[12:0];      
+        end else begin
+            _sp = _sp;
+            _stack_head = _stack_head;
+        end
+    end
+
     seven_seg seven_seg_inst(
         .clk(clk_in),
         .rst(grst),
@@ -205,8 +159,8 @@ module debouncer #(parameter CLK_PERIOD_NS = 10,
                   input wire rst_in,
                   input wire dirty_in,
                   output logic clean_out);
-  parameter COUNTER_SIZE = int'($ceil(DEBOUNCE_TIME_MS*1_000_000/CLK_PERIOD_NS));
-  parameter COUNTER_WIDTH = $clog2(COUNTER_SIZE);
+  localparam COUNTER_SIZE = int'($ceil(DEBOUNCE_TIME_MS*1_000_000/CLK_PERIOD_NS));
+  localparam COUNTER_WIDTH = $clog2(COUNTER_SIZE);
 
   logic [COUNTER_WIDTH-1:0] counter;
   logic old_dirty_in;
