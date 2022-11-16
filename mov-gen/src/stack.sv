@@ -1,24 +1,10 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-`define src(stack_mov) (stack_mov[15:
-`define dst(stack_mov) (stack_mov[11:6])
-`define meta(stack_mov) (stack_mov[15:12])
 
-/*
-Each 16-bit move on stack looks like:
 
-mov.src = 6 bit;
-mov.dst = 6 bit;
-mov.meta = 4 bit; // holds the taken piece
-*/
-// typedef struct packed {
-//     logic [5:0] src;
-//     logic [5:0] dst;
-//     logic [3:0] meta;
-// } stack_mov_t;
 
-typedef logic [15:0] stack_mov_t;
+
 
 /*
 3 element Stack, containing 16 bits in each level. 
@@ -29,8 +15,8 @@ module stack #(parameter DEPTH = 3) (
     input wire rst,
     input wire push,
     input wire pop,
-    input stack_mov_t data_in, 
-    output stack_mov_t data_out,
+    input wire [15:0] data_in, 
+    output logic [15:0] data_out,
     output logic [DEPTH-1:0] sp // points to next free space
     );
     // OH: how to write good state machines in verilog? 

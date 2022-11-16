@@ -43,45 +43,57 @@ module top_level(
     input wire btnd,
     input wire btnu,
     input wire btnr,
+    input wire btnl,
 
     output logic ca, cb, cc, cd, ce, cf, cg, dp,
     output logic [7:0] an
 );
     logic grst;
     assign grst = btnc;
-    logic clean_down, clean_up, clean_right;
-    logic old_clean_down, old_clean_up, old_clean_right;
+    logic clean_down, clean_up, clean_right, clean_left;
+    logic old_clean_down, old_clean_up, old_clean_right, old_clean_left;
 
-    debouncer up_cleaner(
+    logic [11:0] move_in;
+    assign move_in = sw[11:0];
+
+    debouncer up_cleaner( // scroll up
         .clk_in(clk_in),
         .rst_in(grst),
         .dirty_in(btnu),
         .clean_out(clean_up)
     );
 
-    debouncer down_cleaner(
+    debouncer down_cleaner( // scroll down
         .clk_in(clk_in),
         .rst_in(grst),
         .dirty_in(btnd),
         .clean_out(clean_down)
     );
 
-    debouncer right_cleaner(
+    debouncer right_cleaner( // push stack
         .clk_in(clk_in),
         .rst_in(grst),
         .dirty_in(btnr),
         .clean_out(clean_right)
     );
 
+    debouncer left_cleaner( // pop stack
+        .clk_in(clk_in),
+        .rst_in(grst),
+        .dirty_in(btnl),
+        .clean_out(clean_left)
+    );
 
+    logic [2:0] row_ind;
 
-    always_ff @(posedge clk_in) begin
+    always_ff @(posedge clk_in) begin : DRIVE_BUTTONS
         if (grst) begin
             row_ind <= 3'b000;
         end else begin
             old_clean_down <= clean_down;
             old_clean_up <= clean_up;
             old_clean_right <= clean_right;
+            old_clean_left <= clean_left;
             // falling edge
             if (old_clean_down && !clean_down) begin
                 row_ind <= row_ind - 3'b001;
@@ -104,11 +116,10 @@ module top_level(
     localparam WHITE     = 2'b01;
     localparam BLACK     = 2'b10;
 
-    logic [2:0] row_ind;
     logic [7:0] row_to_show [7:0];
 
     logic [7:0] board [63:0];
-    always_ff @(posedge clk_in) begin
+    always_ff @(posedge clk_in) begin : DRIVE_IO
         if(grst) begin
         end else begin
             for (int i = 0; i < 8; i++) begin
@@ -117,26 +128,65 @@ module top_level(
         end
     end
 
-    logic [2:0] _sp;
-    logic [11:0] _stack_head;
+    logic [2:0] sp_out;
+    logic push_in, pop_in;
+    logic [15:0] stack_data_in, stack_data_out;
+
+
+    stack stack_inst (
+        .clk(clk_in),
+        .rst(grst),
+        .push(push_in),
+        .pop(pop_in),
+        .data_in(stack_data_in), 
+        .data_out(stack_data_out),
+        .sp(sp_out) 
+    );
 
     board_rep board_inst (
         .clk(clk_in),
         .rst(grst),
-        .sp(_sp),
-        .stack_head({_stack_head, 4'b0000}),
+        .sp(sp_out),
+        .stack_head(stack_data_out),
         .board(board)
     );
+    localparam META_NONE = 4'b1111; 
+    localparam META_PAWN = 4'b0000;
+    localparam META_KNIGHT = 4'b0001;
+    localparam META_BISHOP = 4'b0010;
+    localparam META_ROOK = 4'b0011;
+    localparam META_QUEEN = 4'b0100;
+    localparam META_KING = 4'b0101;
 
-    always_ff @(posedge clk_in) begin
+    logic [3:0] meta_at_pos;
+    always_comb begin : META_FROM_BOARD
+        case (`piece(board[move_in[5:0]])) // piece at dst
+            KING: meta_at_pos = META_KING;
+            QUEEN: meta_at_pos = META_QUEEN;
+            ROOK: meta_at_pos = META_ROOK;
+            KNIGHT: meta_at_pos = META_KNIGHT;
+            BISHOP: meta_at_pos = META_BISHOP;
+            PAWN: meta_at_pos = META_PAWN;
+            default: meta_at_pos = META_NONE;
+        endcase
+    end
+
+    always_ff @(posedge clk_in) begin : DRIVE_STACK
         if (old_clean_right && !clean_right) begin
-           _sp = sw[15:13];
-           _stack_head = sw[12:0];      
+            // push
+            stack_data_in <= {sw[12:0], meta_at_pos}; 
+            push_in <= 1'b1;
+        end else if (old_clean_left && !clean_left) begin
+            // pop
+            pop_in <= 1'b1;
         end else begin
-            _sp = _sp;
-            _stack_head = _stack_head;
+            push_in <= 1'b0;
+            pop_in <= 1'b0;
         end
     end
+
+
+    
 
     seven_seg seven_seg_inst(
         .clk(clk_in),
