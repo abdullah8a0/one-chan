@@ -6,6 +6,32 @@ One-Chan: A hardware based chess engine
 `timescale 1ns / 1ps
 
 
+/*
+Each 8-bit board position looks like:
+
+pos.piece = 6 bit; // holds the piece in one-hot encoding
+pos.color = 2 bit; // holds the color in one-hot encoding
+*/
+typedef logic [7:0] board_pos_t;
+// board pos is 8 bits, extract data using macros
+`define piece(board_pos) (board_pos[5:0])
+`define color(board_pos) (board_pos[7:6])
+
+
+
+/*
+Each 16-bit move on stack looks like:
+
+mov.src = 6 bit;
+mov.dst = 6 bit;
+mov.meta = 4 bit; // holds the taken piece
+*/
+typedef logic [15:0] stack_mov_t;
+
+`define src(stack_mov) (stack_mov[15:10])
+`define dst(stack_mov) (stack_mov[9:4])
+`define meta(stack_mov) (stack_mov[3:0])
+
 
 
 
@@ -24,6 +50,7 @@ module top_level(
     logic grst;
     assign grst = btnc;
     logic clean_down, clean_up;
+    logic old_clean_down, old_clean_up;
 
     debouncer up_cleaner(
         .clk_in(clk_in),
@@ -40,88 +67,102 @@ module top_level(
     );
 
     // for now, bind sw to led
-    assign led = sw;
+    assign led[15:3] = sw[15:3];
     // row is incremented by 1 if btnu is pressed, and decremented by 1 if btnd is pressed
     logic [2:0] row_ind;
+    assign led[2:0] = row_ind;
 
     always_ff @(posedge clk_in) begin
         if (grst) begin
             row_ind <= 3'b000;
         end else begin
-            if (clean_up) begin
+            old_clean_down <= clean_down;
+            old_clean_up <= clean_up;
+            // falling edge
+            if (old_clean_down && !clean_down) begin
                 row_ind <= row_ind + 3'b001;
-            end else if (clean_down) begin
+            end else if (old_clean_up && !clean_up) begin
                 row_ind <= row_ind - 3'b001;
             end
         end
     end
-    
+    localparam EMPTY     = 6'b111111;
+    localparam KING      = 6'b000001;
+    localparam QUEEN     = 6'b000010;
+    localparam ROOK      = 6'b000100;
+    localparam KNIGHT    = 6'b001000;
+    localparam BISHOP    = 6'b010000;
+    localparam PAWN      = 6'b100000;
 
-    board_pos_t INIT_BOARD[63:0];
-        assign INIT_BOARD[0] = {ROOK, WHITE};
-        assign INIT_BOARD[1] = {KNIGHT, WHITE};
-        assign INIT_BOARD[2] = {BISHOP, WHITE};
-        assign INIT_BOARD[3] = {QUEEN, WHITE};
-        assign INIT_BOARD[4] = {KING, WHITE};
-        assign INIT_BOARD[5] = {BISHOP, WHITE};
-        assign INIT_BOARD[6] = {KNIGHT, WHITE};
-        assign INIT_BOARD[7] = {ROOK, WHITE};
-        assign INIT_BOARD[8] = {PAWN, WHITE};
-        assign INIT_BOARD[9] = {PAWN, WHITE};
-        assign INIT_BOARD[10] = {PAWN, WHITE};
-        assign INIT_BOARD[11] = {PAWN, WHITE};
-        assign INIT_BOARD[12] = {PAWN, WHITE};
-        assign INIT_BOARD[13] = {PAWN, WHITE};
-        assign INIT_BOARD[14] = {PAWN, WHITE};
-        assign INIT_BOARD[15] = {PAWN, WHITE};
-        assign INIT_BOARD[16] = {EMPTY, WHITE};
-        assign INIT_BOARD[17] = {EMPTY, WHITE};
-        assign INIT_BOARD[18] = {EMPTY, WHITE};
-        assign INIT_BOARD[19] = {EMPTY, WHITE};
-        assign INIT_BOARD[20] = {EMPTY, WHITE};
-        assign INIT_BOARD[21] = {EMPTY, WHITE};
-        assign INIT_BOARD[22] = {EMPTY, WHITE};
-        assign INIT_BOARD[23] = {EMPTY, WHITE};
-        assign INIT_BOARD[24] = {EMPTY, WHITE};
-        assign INIT_BOARD[25] = {EMPTY, WHITE};
-        assign INIT_BOARD[26] = {EMPTY, WHITE};
-        assign INIT_BOARD[27] = {EMPTY, WHITE};
-        assign INIT_BOARD[28] = {EMPTY, WHITE};
-        assign INIT_BOARD[29] = {EMPTY, WHITE};
-        assign INIT_BOARD[30] = {EMPTY, WHITE};
-        assign INIT_BOARD[31] = {EMPTY, WHITE};
-        assign INIT_BOARD[32] = {EMPTY, WHITE};
-        assign INIT_BOARD[33] = {EMPTY, WHITE};
-        assign INIT_BOARD[34] = {EMPTY, WHITE};
-        assign INIT_BOARD[35] = {EMPTY, WHITE};
-        assign INIT_BOARD[36] = {EMPTY, WHITE};
-        assign INIT_BOARD[37] = {EMPTY, WHITE};
-        assign INIT_BOARD[38] = {EMPTY, WHITE};
-        assign INIT_BOARD[39] = {EMPTY, WHITE};
-        assign INIT_BOARD[40] = {EMPTY, WHITE};
-        assign INIT_BOARD[41] = {EMPTY, WHITE};
-        assign INIT_BOARD[42] = {EMPTY, WHITE};
-        assign INIT_BOARD[43] = {EMPTY, WHITE};
-        assign INIT_BOARD[44] = {EMPTY, WHITE};
-        assign INIT_BOARD[45] = {EMPTY, WHITE};
-        assign INIT_BOARD[46] = {EMPTY, WHITE};
-        assign INIT_BOARD[47] = {EMPTY, WHITE};
-        assign INIT_BOARD[48] = {PAWN, BLACK};
-        assign INIT_BOARD[49] = {PAWN, BLACK};
-        assign INIT_BOARD[50] = {PAWN, BLACK};
-        assign INIT_BOARD[51] = {PAWN, BLACK};
-        assign INIT_BOARD[52] = {PAWN, BLACK};
-        assign INIT_BOARD[53] = {PAWN, BLACK};
-        assign INIT_BOARD[54] = {PAWN, BLACK};
-        assign INIT_BOARD[55] = {PAWN, BLACK};
-        assign INIT_BOARD[56] = {ROOK, BLACK};
-        assign INIT_BOARD[57] = {KNIGHT, BLACK};
-        assign INIT_BOARD[58] = {BISHOP, BLACK};
-        assign INIT_BOARD[59] = {QUEEN, BLACK};
-        assign INIT_BOARD[60] = {KING, BLACK};
-        assign INIT_BOARD[61] = {BISHOP, BLACK};
-        assign INIT_BOARD[62] = {KNIGHT, BLACK};
-        assign INIT_BOARD[63] = {ROOK, BLACK};
+    localparam WHITE     = 2'b01;
+    localparam BLACK     = 2'b10;
+     
+
+    logic [7:0] INIT_BOARD[63:0];
+        assign INIT_BOARD[0] = {WHITE, ROOK};
+        assign INIT_BOARD[1] = {WHITE, KNIGHT};
+        assign INIT_BOARD[2] = {WHITE, BISHOP};
+        assign INIT_BOARD[3] = {WHITE, QUEEN};
+        assign INIT_BOARD[4] = {WHITE, KING};
+        assign INIT_BOARD[5] = {WHITE, BISHOP};
+        assign INIT_BOARD[6] = {WHITE, KNIGHT};
+        assign INIT_BOARD[7] = {WHITE, ROOK};
+        assign INIT_BOARD[8] = {WHITE, PAWN};
+        assign INIT_BOARD[9] = {WHITE, PAWN};
+        assign INIT_BOARD[10] = {WHITE, PAWN};
+        assign INIT_BOARD[11] = {WHITE, PAWN};
+        assign INIT_BOARD[12] = {WHITE, PAWN};
+        assign INIT_BOARD[13] = {WHITE, PAWN};
+        assign INIT_BOARD[14] = {WHITE, PAWN};
+        assign INIT_BOARD[15] = {WHITE, PAWN};
+        assign INIT_BOARD[16] = {WHITE, EMPTY};
+        assign INIT_BOARD[17] = {WHITE, EMPTY};
+        assign INIT_BOARD[18] = {WHITE, EMPTY};
+        assign INIT_BOARD[19] = {WHITE, EMPTY};
+        assign INIT_BOARD[20] = {WHITE, EMPTY};
+        assign INIT_BOARD[21] = {WHITE, EMPTY};
+        assign INIT_BOARD[22] = {WHITE, EMPTY};
+        assign INIT_BOARD[23] = {WHITE, EMPTY};
+        assign INIT_BOARD[24] = {WHITE, EMPTY};
+        assign INIT_BOARD[25] = {WHITE, EMPTY};
+        assign INIT_BOARD[26] = {WHITE, EMPTY};
+        assign INIT_BOARD[27] = {WHITE, EMPTY};
+        assign INIT_BOARD[28] = {WHITE, EMPTY};
+        assign INIT_BOARD[29] = {WHITE, EMPTY};
+        assign INIT_BOARD[30] = {WHITE, EMPTY};
+        assign INIT_BOARD[31] = {WHITE, EMPTY};
+        assign INIT_BOARD[32] = {WHITE, EMPTY};
+        assign INIT_BOARD[33] = {WHITE, EMPTY};
+        assign INIT_BOARD[34] = {WHITE, EMPTY};
+        assign INIT_BOARD[35] = {WHITE, EMPTY};
+        assign INIT_BOARD[36] = {WHITE, EMPTY};
+        assign INIT_BOARD[37] = {WHITE, EMPTY};
+        assign INIT_BOARD[38] = {WHITE, EMPTY};
+        assign INIT_BOARD[39] = {WHITE, EMPTY};
+        assign INIT_BOARD[40] = {WHITE, EMPTY};
+        assign INIT_BOARD[41] = {WHITE, EMPTY};
+        assign INIT_BOARD[42] = {WHITE, EMPTY};
+        assign INIT_BOARD[43] = {WHITE, EMPTY};
+        assign INIT_BOARD[44] = {WHITE, EMPTY};
+        assign INIT_BOARD[45] = {WHITE, EMPTY};
+        assign INIT_BOARD[46] = {WHITE, EMPTY};
+        assign INIT_BOARD[47] = {WHITE, EMPTY};
+        assign INIT_BOARD[48] = {BLACK, PAWN};
+        assign INIT_BOARD[49] = {BLACK, PAWN};
+        assign INIT_BOARD[50] = {BLACK, PAWN};
+        assign INIT_BOARD[51] = {BLACK, PAWN};
+        assign INIT_BOARD[52] = {BLACK, PAWN};
+        assign INIT_BOARD[53] = {BLACK, PAWN};
+        assign INIT_BOARD[54] = {BLACK, PAWN};
+        assign INIT_BOARD[55] = {BLACK, PAWN};
+        assign INIT_BOARD[56] = {BLACK, ROOK};
+        assign INIT_BOARD[57] = {BLACK, KNIGHT};
+        assign INIT_BOARD[58] = {BLACK, BISHOP};
+        assign INIT_BOARD[59] = {BLACK, QUEEN};
+        assign INIT_BOARD[60] = {BLACK, KING};
+        assign INIT_BOARD[61] = {BLACK, BISHOP};
+        assign INIT_BOARD[62] = {BLACK, KNIGHT};
+        assign INIT_BOARD[63] = {BLACK, ROOK};
 
 
 
@@ -129,19 +170,26 @@ module top_level(
 
     logic [7:0] row_to_show [7:0];
 
-    always_comb begin
-        for (int i = 0; i < 8; i++) begin
-            row_to_show[i] = INIT_BOARD[row_ind << 3 + i];
+    logic [7:0] board [63:0];
+    always_ff @(posedge clk_in) begin
+        if(grst) begin
+            for (int i = 0; i < 64; i++) begin
+                board[i] <= INIT_BOARD[i];
+            end
+        end else begin
+            for (int i = 0; i < 8; i++) begin
+                row_to_show[i] <= board[row_ind << 3 | i];
+            end
         end
     end
 
-    
+     
     seven_seg seven_seg_inst(
         .clk(clk_in),
         .rst(grst),
-        .row()
+        .row(row_to_show),
 
-        .cat_out({cg, cf, ce, cd, cc, cb, ca})
+        .cat_out({cg, cf, ce, cd, cc, cb, ca}),
         .dot_out(dp),
         .an_out(an)
     );

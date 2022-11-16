@@ -1,9 +1,13 @@
 `default_nettype none
 
+`define piece(board_pos) (board_pos[5:0])
+`define color(board_pos) (board_pos[7:6])
+
+
 module seven_seg #(parameter COUNT_TO = 'd100_000) (
         input wire         clk,
         input wire         rst,
-        input board_pos_t  row [7:0],
+        input wire [7:0]  row [7:0],
 
         output logic[6:0]   cat_out,
         output logic        dot_out,
@@ -28,28 +32,28 @@ module seven_seg #(parameter COUNT_TO = 'd100_000) (
     always_comb begin 
         case (segment_state)
             8'b0000_0001: 
-            routed_vals = `piece(row[0]);
+            routed_vals = (row[0]);
             8'b0000_0010: 
-            routed_vals = `piece(row[1]);
+            routed_vals = (row[1]);
             8'b0000_0100: 
-            routed_vals = `piece(row[2]);
+            routed_vals = (row[2]);
             8'b0000_1000: 
-            routed_vals = `piece(row[3]);
+            routed_vals = (row[3]);
             8'b0001_0000: 
-            routed_vals = `piece(row[4]);
+            routed_vals = (row[4]);
             8'b0010_0000: 
-            routed_vals = `piece(row[5]);
+            routed_vals = (row[5]);
             8'b0100_0000: 
-            routed_vals = `piece(row[6]);
+            routed_vals = (row[6]);
             8'b1000_0000: 
-            routed_vals = `piece(row[7]);
-            default: routed_vals = EMPTY;
+            routed_vals = (row[7]);
+            default: routed_vals = {WHITE, EMPTY};
         endcase       
     end
 
-  cto7s mcto7s (.x_in(routed_vals), .s_out(led_out));
+  cto7s mcto7s (.x_in(`piece(routed_vals)), .s_out(led_out));
   assign cat_out = ~led_out; //<--note this inversion is needed
-  assign dot_out = `color(routed_vals) == WHITE ? 1'b1 : 1'b0;
+  assign dot_out = `color(routed_vals) == WHITE ? 1'b0 : 1'b1;
   assign an_out = ~segment_state; //note this inversion is needed
 
   always_ff @(posedge clk)begin
@@ -69,7 +73,7 @@ endmodule // seven_segment_controller
 
 
 module cto7s(
-        input logic [5:0] x_in,
+        input wire [5:0] x_in,
         output logic [6:0] s_out
         );
         // array of bits that are "one hot" with chess pieces
