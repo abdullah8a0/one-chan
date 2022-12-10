@@ -54,7 +54,6 @@ module moves(
                     state <= SEARCH;
                     from_reg <= stack_top[15:10]; // from continues from stack top
                     to_reg <= 0;
-                
                 end
                 no_move <= 0;
                 move_out_valid <= 0;
