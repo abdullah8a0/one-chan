@@ -28,7 +28,8 @@ module board_rep #(parameter DEPTH=3) (
     input wire rst,
     input wire [DEPTH-1:0] sp,
     input wire [15:0] stack_head,
-    output logic [7:0] board [63:0]
+    output logic [7:0] board [63:0],
+    output logic [1:0] color_to_move
     );
     localparam EMPTY     = 6'b111111;
     localparam KING      = 6'b000001;
@@ -142,7 +143,7 @@ module board_rep #(parameter DEPTH=3) (
             if (sp > old_sp) begin
                 // push
                 board[`dst(stack_head)] <= board[`src(stack_head)];
-                board[`src(stack_head)] <= {current_color, EMPTY};
+                board[`src(stack_head)] <= {WHITE, EMPTY};
                 current_color <= ~current_color;
                 
             end else if (sp < old_sp) begin
@@ -157,6 +158,8 @@ module board_rep #(parameter DEPTH=3) (
             old_stack_head <= stack_head;
         end
     end
+
+    assign color_to_move = current_color;
 endmodule
 
 `default_nettype wire

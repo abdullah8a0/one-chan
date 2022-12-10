@@ -61,14 +61,11 @@ module traverse #(parameter DEPTH = 3) (
                 STEP_DOWN: begin
                     if (st_full) begin // immediately spray
                         state <= SPRAY;
-                        // pop <= 1'b1;
                     end else if (mov_gen_done) begin // if no move step up and pop, otherwise push and step down
                         if (no_move) begin
                             state <= STEP_UP;
-                            // pop <= 1'b1;
                         end else begin
                             state <= STEP_DOWN;
-                            // push <= 1'b1;
                         end
                     end else begin
                         state <= STEP_DOWN;
@@ -80,16 +77,14 @@ module traverse #(parameter DEPTH = 3) (
                     end else if (mov_gen_done) begin // if no move step up and pop, otherwise push and step down
                         if (no_move) begin
                             state <= STEP_UP;
-                            pop <= 1'b1;
                         end else begin
                             state <= STEP_DOWN;
-                            push <= 1'b1;
                         end
                     end else begin
                         state <= STEP_UP;
                     end
                 end
-                SPRAY: begin // pops and steps up
+                SPRAY: begin // steps up
                     state <= STEP_UP;
                 end
             endcase
@@ -103,16 +98,21 @@ module traverse #(parameter DEPTH = 3) (
                 push = !st_full && move_in_valid;
                 pop = st_full || no_move;
                 stack_move_out = move_in;
+                step = !st_full && move_in_valid;
+                spray = 1'b0;  
             end
             STEP_UP: begin
                 push = move_in_valid;
                 pop = !st_empty && (no_move || st_full);
                 stack_move_out = move_in;
+                step = 1'b0;
+                spray = st_empty && no_move;
             end
             SPRAY: begin
                 push = 1'b0;
                 pop = 1'b0;
-
+                step = 1'b0;
+                spray = 1'b1;
                 // TODO: figure out spray
             end
         endcase

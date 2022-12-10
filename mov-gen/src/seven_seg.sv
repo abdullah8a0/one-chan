@@ -99,13 +99,8 @@ module cto7s(
               default: pie = 7'b1000000; // 6
           endcase
         end 
-
-
-
+        
         logic sa,sb,sc,sd,se,sf,sg;
-
-          
-         
 
         assign sa = ~(pie[0] || pie[3] || pie[6]);
         assign sb = ~(pie[3] || pie[6]);

@@ -30,22 +30,19 @@ module stack #(parameter DEPTH = 3) (
     localparam QUEEN = 4'b0100; // DO AUXILIARY stuff in comb, state in always_ff
     localparam KING = 4'b0101;
     
-
-
     logic [DEPTH-1:0] sp_minus_one;
     stack_mov_t stack [DEPTH-1:0];
 
     always_ff @(posedge clk) begin
-        if(rst) begin
+        if (rst) begin
             sp <= 0;
             sp_minus_one <= -1;
-            // stack[0] <= {6'b0, 6'b0, NONE};
         end else begin
-            if(push) begin
+            if (push) begin
                 sp <= sp + 1;
                 sp_minus_one <= sp;
                 stack[sp] <= data_in;
-            end else if(pop) begin
+            end else if (pop) begin
                 sp <= sp_minus_one;
                 sp_minus_one <= sp_minus_one - 1;
             end
@@ -54,7 +51,7 @@ module stack #(parameter DEPTH = 3) (
 
 
     // data_out is the top of the stack
-    assign data_out = (sp==0)?{6'b0, 6'b0, NONE}:stack[sp_minus_one];
+    assign data_out = (sp == 0)?{6'b0, 6'b0, NONE}:stack[sp_minus_one];
 
 endmodule
 
