@@ -17,7 +17,7 @@ module moves_tb;
     logic [3:0] sp;
 
     logic move_out_valid;
-    logic [12:0] move_out;
+    logic [11:0] move_out;
     logic no_move; // exhausted all moves
 
 
@@ -58,22 +58,22 @@ module moves_tb;
     localparam WHITE     = 2'b01;
     localparam BLACK     = 2'b10;
         
-        assign board[0] = {WHITE, ROOK};
-        assign board[1] = {WHITE, KNIGHT};
-        assign board[2] = {WHITE, BISHOP};
-        assign board[3] = {WHITE, QUEEN};
-        assign board[4] = {WHITE, KING};
-        assign board[5] = {WHITE, BISHOP};
-        assign board[6] = {WHITE, KNIGHT};
-        assign board[7] = {WHITE, ROOK};
-        assign board[8] = {WHITE, PAWN};
-        assign board[9] = {WHITE, PAWN};
-        assign board[10] = {WHITE, PAWN};
-        assign board[11] = {WHITE, PAWN};
-        assign board[12] = {WHITE, PAWN};
-        assign board[13] = {WHITE, PAWN};
-        assign board[14] = {WHITE, PAWN};
-        assign board[15] = {WHITE, PAWN};
+        assign board[0] = {WHITE, EMPTY};
+        assign board[1] = {WHITE, EMPTY};
+        assign board[2] = {WHITE, EMPTY};
+        assign board[3] = {WHITE, EMPTY};
+        assign board[4] = {WHITE, EMPTY};
+        assign board[5] = {WHITE, EMPTY};
+        assign board[6] = {WHITE, EMPTY};
+        assign board[7] = {WHITE, EMPTY};
+        assign board[8] = {WHITE, EMPTY};
+        assign board[9] = {WHITE, EMPTY};
+        assign board[10] = {WHITE, EMPTY};
+        assign board[11] = {WHITE, EMPTY};
+        assign board[12] = {WHITE, EMPTY};
+        assign board[13] = {WHITE, EMPTY};
+        assign board[14] = {WHITE, EMPTY};
+        assign board[15] = {WHITE, EMPTY};
         assign board[16] = {WHITE, EMPTY};
         assign board[17] = {WHITE, EMPTY};
         assign board[18] = {WHITE, EMPTY};
@@ -87,7 +87,7 @@ module moves_tb;
         assign board[26] = {WHITE, EMPTY};
         assign board[27] = {WHITE, EMPTY};
         assign board[28] = {WHITE, EMPTY};
-        assign board[29] = {WHITE, EMPTY};
+        assign board[29] = {BLACK, ROOK};
         assign board[30] = {WHITE, EMPTY};
         assign board[31] = {WHITE, EMPTY};
         assign board[32] = {WHITE, EMPTY};
@@ -106,22 +106,22 @@ module moves_tb;
         assign board[45] = {WHITE, EMPTY};
         assign board[46] = {WHITE, EMPTY};
         assign board[47] = {WHITE, EMPTY};
-        assign board[48] = {BLACK, PAWN};
-        assign board[49] = {BLACK, PAWN};
-        assign board[50] = {BLACK, PAWN};
-        assign board[51] = {BLACK, PAWN};
-        assign board[52] = {BLACK, PAWN};
-        assign board[53] = {BLACK, PAWN};
-        assign board[54] = {BLACK, PAWN};
-        assign board[55] = {BLACK, PAWN};
-        assign board[56] = {BLACK, ROOK};
-        assign board[57] = {BLACK, KNIGHT};
-        assign board[58] = {BLACK, BISHOP};
-        assign board[59] = {BLACK, QUEEN};
-        assign board[60] = {BLACK, KING};
-        assign board[61] = {BLACK, BISHOP};
-        assign board[62] = {BLACK, KNIGHT};
-        assign board[63] = {BLACK, ROOK};
+        assign board[48] = {WHITE, EMPTY};
+        assign board[49] = {WHITE, EMPTY};
+        assign board[50] = {WHITE, EMPTY};
+        assign board[51] = {WHITE, EMPTY};
+        assign board[52] = {WHITE, EMPTY};
+        assign board[53] = {WHITE, EMPTY};
+        assign board[54] = {WHITE, EMPTY};
+        assign board[55] = {WHITE, EMPTY};
+        assign board[56] = {WHITE, EMPTY};
+        assign board[57] = {WHITE, EMPTY};
+        assign board[58] = {WHITE, EMPTY};
+        assign board[59] = {WHITE, EMPTY};
+        assign board[60] = {WHITE, EMPTY};
+        assign board[61] = {WHITE, EMPTY};
+        assign board[62] = {WHITE, EMPTY};
+        assign board[63] = {WHITE, EMPTY};
 
  
     initial begin
@@ -141,9 +141,9 @@ module moves_tb;
         #10;
         step = 1'b0;
 
-        #10000
+        #1000
         $finish;
     end
+endmodule
 
-    endmodule
 `default_nettype wire

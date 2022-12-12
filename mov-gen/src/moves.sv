@@ -2,6 +2,9 @@
 `default_nettype none
 
 
+/*
+Generates moves for the chess engine
+*/
 module moves(
     input wire clk,
     input wire rst,
@@ -19,21 +22,45 @@ module moves(
     input wire [3:0] sp,
 
     output logic move_out_valid,
-    output logic [12:0] move_out,
+    output logic [11:0] move_out,
     output logic no_move // exhausted all moves
     );
 
     logic [5:0] from_reg;
-    logic [5:0] to_reg;
-    logic [2:0] dx;
-    logic [2:0] dy;
+    logic unsigned [2:0] dx;
+    logic unsigned [2:0] dy;
 
     // states
     localparam SEARCH = 2'b00;
-    localparam MOVE = 2'b01;
-    localparam IDLE = 2'b10;
+    localparam MOVE1 = 2'b01; // ring 1
+    localparam MOVE2 = 2'b10; // ring 2
+    localparam IDLE = 2'b11;
 
     logic [1:0] state;
+
+
+
+    function logic in_bounds (logic [5:0] from, logic [2:0] dx, logic [2:0] dy);
+        // dx, dy := {0, 1, 2, -1, -2}, checks if to is in bounds in the x and y direction in 8x8 board
+        // does not use signed arithmetic, do it manually usign bit tricks
+        logic x_neg_out_bound;
+        logic y_neg_out_bound;
+        logic x_pos_out_bound;
+        logic y_pos_out_bound;
+            
+        // (dx = -1 and x = 0) or (dx = -2 and x=0,1)
+        // so dx is neg and x is 0 or dx is -2 and x is 1
+        x_neg_out_bound = (dx[2] & (from[2:0] == 3'b000)) | (dx == 3'b110 && from[2:0] == 3'b001);
+        y_neg_out_bound = (dy[2] & (from[5:3] == 3'b000)) | (dy == 3'b110 && from[5:3] == 3'b001);
+
+        // (dx = 1 and x = 7) or (dx = 2 and x=6,7)
+        x_pos_out_bound = (dx == 3'b001 && from[2:0] == 3'b111) | (dx == 3'b010 && from[2:1] == 3'b11);
+        y_pos_out_bound = (dy == 3'b001 && from[5:3] == 3'b111) | (dy == 3'b010 && from[5:4] == 3'b11);
+            
+        return ~(x_neg_out_bound || y_neg_out_bound || x_pos_out_bound || y_pos_out_bound);
+
+    endfunction
+
 
 
     // move generator
@@ -41,7 +68,6 @@ module moves(
         if (rst) begin
             state <= IDLE;
             from_reg <= 0;
-            to_reg <= 0;
             move_out_valid <= 0;
             no_move <= 0;
         end
@@ -53,7 +79,6 @@ module moves(
                 if (step) begin
                     state <= SEARCH;
                     from_reg <= stack_top[15:10]; // from continues from stack top
-                    to_reg <= 0;
                 end
                 no_move <= 0;
                 move_out_valid <= 0;
@@ -65,21 +90,18 @@ module moves(
                 end else begin
                     // if color to move found then move to move state
                     if (board[from_reg][7:6] == top_col) begin
-                        to_reg <= 0;
                         dx <= 3'b110;
                         dy <= 3'b110;
                         state <= MOVE;
                     end else begin
                         // else increment from
                         from_reg <= from_reg + 1;
-                        to_reg <= 0;
                     end
                     
                 end
             end
             MOVE: begin
-                if (dx == 3'b010 && dy == 3'b010) begin
-                    to_reg <= 0;
+                if (dx == 3'b01 && dy == 3'b010) begin
                     from_reg <= from_reg + 1;
                     state <= SEARCH;
                 end else begin // increment to
@@ -90,37 +112,13 @@ module moves(
                         dx <= dx + 1;
                     end
                     if (in_bounds(from_reg,dx,dy)) begin
-                        to_reg <= {from_reg[5:3] + dy, from_reg[2:0] + dx};
                         if (target_xy(board[from_reg][5:0], dx, dy)) begin
                             move_out_valid <= 1;
-                            move_out <= {from_reg, to_reg};
+                            move_out <= {from_reg, from_reg[5:3] + dy, from_reg[2:0] + dx};
                             state <= IDLE; // only need one move
                         end
-                    end else begin
-                        to_reg <= 0;
                     end
                 end
-                    
-
-
-                // if (to_reg == 63) begin
-                //     to_reg <= 0;
-                //     from_reg <= from_reg + 1;
-                //     state <= SEARCH;
-                // end else begin
-                //     if (dx == 3'b010) begin
-                //         dx <= 3'b110;
-                //         dy <= dy + 1;
-                //     end else begin
-                //         dx <= dx + 1;
-                //     end
-                //     to_reg <= {from_reg[5:3] + dx, from_reg[2:0] + dy};
-                // end
-                // if (target_xy(board[from_reg][5:0], dx, dy)) begin
-                //     move_out_valid <= 1;
-                //     move_out <= {from_reg, to_reg};
-                //     state <= IDLE; // only need one move
-                // end
             end
        endcase 
     end
@@ -190,35 +188,5 @@ function logic target_xy (logic [5:0] piece, logic [2:0] x, logic [2:0] y); // x
 
 endfunction
 
-
-function logic in_bounds (logic [5:0] from, logic [2:0] dx, logic [2:0] dy);
-    // dx, dy := {0, 1, 2, -1, -2}, checks if to is in bounds in the x and y direction in 8x8 board
-    // does not use signed arithmetic, do it manually usign bit tricks
-    localparam X = 3'b010;
-    localparam Y = 3'b010;
-
-    logic [2:0] x;
-    logic [2:0] y;
-    logic x_neg_out_bound;
-    logic y_neg_out_bound;
-    logic x_pos_out_bound;
-    logic y_pos_out_bound;
-
-    assign x = from[2:0] + dx;
-    assign y = from[5:3] + dy;
-
-
-    assign x_neg_out_bound = x[2] && ~dx[2];
-    assign y_neg_out_bound = y[2] && ~dy[2];
-
-
-    assign x_pos_out_bound = ~x[2] && dx[2];
-    assign y_pos_out_bound = ~y[2] && dy[2];
-
-    return ~x_neg_out_bound & ~x_pos_out_bound & ~y_neg_out_bound & ~y_pos_out_bound;
-
-
-
-endfunction
 
 `default_nettype wire
