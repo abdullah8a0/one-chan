@@ -1,0 +1,65 @@
+I. Program
+    1. initialize
+        a) store layer information, e.g. input map width/length, weight/bias width/length/start_address, operation(conv/mul, reLU or not) on BRAM 1
+        b) save weights on BRAM 2
+        c) redo step a and b
+
+    2. grid computation
+        a) when receive a valid packets from move generator, the total_move_num will be set to a nonzero value, program start
+        b) do DNN computation for all the possible moves
+            i)   if moves are not all evaluated, compute input grid and sent to unified buffer
+            ii)  load layer computation information, add layer_info_sp(push)
+            iii) compute ifmap_o W/L
+            iv)  load weights on weight buffer
+            v)   load bias on accumulator
+            vi)  
+
+
+II. Register List
+    zero             0x00
+    layer_num        0x01
+    
+    input_height     0x02
+    input_weight     0x03
+
+    layer_info_addr  0x04
+    weight_height    0x05
+    weight_width     0x06
+    ifmap_i_height   0x07
+    ifmap_i_width    0x08
+    ifmap_o_height   0x09
+    ifmap_o_width    0x0A
+    operation        0x0B
+
+    conv_sp          0x0C
+    conv_total_num   0x0D
+    
+    move_sp          0x0E
+    move_current     0x11
+    optimal_move     0x12
+    optimal_move_val 0x13 
+    
+    height0-height63
+    bias0-bias64
+
+
+III. Instructions
+    load reg offset(base) mem_block
+    store reg offset(base) mem_block
+    
+
+    load weight from mem to SA 
+    load bias from mem to accumulator
+
+    setup systolic data (with conv_sp, weight_height)
+    setup systolic data (with)
+
+
+    jal label
+    blt rs1, rs2, label
+
+IV. Decode
+    1. Layer information decoding
+    2. Instruction decoding
+    3. Operation decoding
+        mul, conv, reLU

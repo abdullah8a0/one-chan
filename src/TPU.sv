@@ -4,8 +4,12 @@ module TPU(
     input wire clk,
     input wire nrst, 
 
-    // spi interface
-    
+    // spi slave interface
+    input wire clk_in,
+    input wire sel_in,
+    input wire [DATA_WIDTH-1:0] data_in,
+
+    // 
 );
 
     // FSM
@@ -18,6 +22,8 @@ module TPU(
 
     // global register
     logic [7:0] move_cnt; // load one move, increase; else decrease by 1
+
+    // initial grid 64*1
 
 endmodule
 

@@ -1,0 +1,40 @@
+setup the program, initialize the memory with neural network information
+
+
+
+SA:
+1. set weight matrix/kernel's height and width
+2. load weight
+3. select operation: convolution or multiplication
+    => different in terms of data_ov setup
+4. accumulator setup(sum all psums together with bias, or just be transparent)
+5. reLU setup
+6. load data width and height
+7. systolic data setup
+8. load data
+    a). If conv, then do several time
+    b). If mul, do once
+9. store result in cache memory
+10. judge whether store then again
+
+
+
+register file:
+1. current weight height and width 
+2. ifmap height and width 
+3. conv_cnt (loop)
+    < (ifmap_height - weight_height + 1)
+4. move_sp (loop)
+    < total_move_num
+5. total_move_num 
+
+
+memory devision:
+1. initial grid: 8-bit, 64-depth
+2. move stack: 16-bit, 250-depth
+2. weight BROMs: 10 BROM, 100-depth
+    => or one BROM, 200-depth, but with a register map
+3. weight width and height BROMs: 10 BROM, 2-depth
+4. bias BROMs: 
+    => weigth matrix, width and height, bias matrix are all store in differnet BROM, with a register map file initialize the position
+5. cache memory for layer values: 10 BRAM, 64-depth

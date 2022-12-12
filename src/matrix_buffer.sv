@@ -47,7 +47,7 @@ module matrix_buffer #(
         else state <= state;
     end
 
-    // read setup
+// read setup
     assign addr_row_i = addr;
     always_ff @(posedge clk or negedge nrst) begin
         if(~nrst) begin
@@ -86,7 +86,7 @@ module matrix_buffer #(
     end
 
 
-    // send
+// send
     logic [$clog2(INPUT_PARALLEL_NUM-OUTPUT_PARALLEL_NUM+1)-1:0] col_cnt;
     logic [LATE_WIDTH-1:0] row_cnt;
     logic [OUTPUT_PARALLEL_NUM-1:0][$clog2(MEM_DEPTH)-1:0] output_addr;   
