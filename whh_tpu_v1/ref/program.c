@@ -5,43 +5,39 @@
 #define CONV 1
 #define MUL  0
 
+int move_total_num;
+int move_current_num;
+int move_max_value;
+
+int layer_num_info;
+int layer_total_num;
+int layer_current_num;
+int input_height;
+int input_width;
+
+int layer_info;
+int weight_height, weight_width;
+int bias_height, bias_width;
+int ifmap_height, ifmap_width;
+int weight_start_addr;
+int bias_start_addr;
+int op; // {reLU_sel, op_sel, flatten}
+
+int weight_length;
+int bias_length;
+
+int dnn_out;
+
+int weight[64];
+int bias[64]; 
+
+
 void loop(){
-
-    int move_total_num;
-    int move_current_num;
-    int move_current;
-    int move_max;
-    int move_max_value;
-
-    int layer_num_info;
-    int layer_total_num;
-    int layer_current_num;
-    int input_height;
-    int input_width;
-
-    int layer_info;
-    int weight_height, weight_width;
-    int bias_height, bias_width;
-    int ifmap_height, ifmap_width;
-    int weight_start_addr;
-    int bias_start_addr;
-    int op; // {reLU_sel, op_sel, flatten}
-
-    int weight_length;
-    int bias_length;
-
-    int dnn_out;
-
-    int weight[64];
-    int bias[64]; 
-
-
     while(move_total_num==0) {} // when the SPI received a valid packet, break out the loop
 
     move_current_num = 0;
-    // move_max = 0;
     move_max_value = -128; // -8'h1_000_0000
-
+    
     layer_num_info = load(LAYER_INFO_BASE_ADDR);  // load function
     layer_total_num, input_height, input_width = decode_layer(layer_num_info);
 
@@ -56,7 +52,8 @@ void loop(){
         layer_current_num = 1; 
         while(layer_current_num <= layer_total_num){
             layer_info = load(LAYER_INFO_BASE_ADDR+layer_current_num); // load function
-            weight_height, weight_width, weight_start_addr, bias_height, bias_width, bias_start_addr, op = decode_layer_compute_info(layer_info); 
+            weight_height, weight_width, weight_start_addr, bias_height, bias_width, bias_start_addr, op 
+                = decode_layer_compute_info(layer_info); 
 
             // something about flatten function should be discussed here
             // 1. flatten the matrix if op[0]==1
@@ -73,17 +70,12 @@ void loop(){
 
             send_systolic_data();
             
-            ifmap_height, ifmap_width = set_ifmap_o(ifmap_height, ifmap_width, weight_height, weight_width);
-
-            // if DNN output is loaded on register file module, load next_pc
-            //if(layer_current_num==layer_total_num) dnn_out = load_dnn_out();
-            
+            ifmap_height, ifmap_width = set_ifmap_o(ifmap_height, ifmap_width, 
+                                                    weight_height, weight_width);      
             layer_current_num++;
         }
 
-
         if(dnn_out > move_max_value){
-            // move_max = move_current;
             move_max_value = dnn_out;
         }
 
@@ -96,13 +88,12 @@ void loop(){
 }
 
 
-int set_ifmap_o(int weight_height, int weight_width, int ifmap_width, int ifmap_width){
-    if(op[0]==CONV){
+int set_ifmap_o(int weight_height, int weight_width, int ifmap_height, int ifmap_width){
+    if(op[1]==CONV){
         ifmap_height = ifmap_height - weight_height + 1;
         ifmap_width = ifmap_width - weight_width + 1;
     }
-    else{ // for matrix multiplication, it is more conplicated
-        // NEED CONVENTION
+    else{ 
         ifmap_height = ifmap_width;
         ifmap_width = weight_width;
     }

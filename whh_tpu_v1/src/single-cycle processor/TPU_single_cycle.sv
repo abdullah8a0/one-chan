@@ -25,7 +25,7 @@ module TPU #(
 
     // send optimal move by SPI
     output logic spi_ov,
-    output logic spi_od
+    output logic [DATA_WIDTH-1:0] spi_od
 );
 
     logic next_pc;

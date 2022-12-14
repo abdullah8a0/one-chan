@@ -142,7 +142,7 @@ module register_file#(
         else if(wrb_en) begin
             for(int i=1; i<`TOTAL_REG_NUM; i=i+1) begin
                 if(i==rd_addr[5:0] && rd_addr[7:6]==2'b00) begin
-                    for(int j=0; j<32; j=j+1) begin
+                    for(int j=1; j<32; j=j+1) begin
                         if(j<X_WIDTH[i]) X_w[i][j] <= wrb_value[j];
                         else X_w[i][j] <= wrb_value[X_WIDTH[i]-1];
                     end
@@ -151,7 +151,7 @@ module register_file#(
             end
         end
         else begin // special instruction            
-            for(int i=0; i<`TOTAL_REG_NUM; i=i+1) begin
+            for(int i=1; i<`TOTAL_REG_NUM; i=i+1) begin
                 if(i==`MOVE_TOTAL_NUM && move_iv) X_w[i] <= total_move_id;
                 if(i==`MOVE_CURRENT && move_current_iv) X_w[i] <= move_current_id;
                 if(i==`DNN_OUT && dnn_iv) X_w[i] <= $signed(dnn_id);
