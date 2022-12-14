@@ -17,10 +17,8 @@ module traverse #(parameter DEPTH = 3) (
     input wire [15:0] move_in,
     input wire no_move, // exhausted all moves
     input wire [5:0] delta_in, // delta of the current move 
-
     output logic step,
     output logic spray,
-
 
     // stack interface
     input wire [15:0] stack_head,
@@ -122,7 +120,7 @@ module traverse #(parameter DEPTH = 3) (
             end
             STEP_DOWN: begin
                 push = !st_full && move_in_valid;
-                pop = st_full || no_move;
+                pop = (st_full || no_move) && !st_empty;
                 stack_move_out = {delta_in, move_in};
                 step = !st_full && move_in_valid;
                 spray = 1'b0;  

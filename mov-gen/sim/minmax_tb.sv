@@ -73,7 +73,8 @@ module minmax_tb;
 
     logic [15:0] stack_head;
     logic [2:0] sp;
-    logic [15:0] stack_move_out;
+    logic [21:0] stack_move_out;
+    logic [5:0] delta_in;
     logic push;
     logic pop;
 
@@ -89,6 +90,7 @@ module minmax_tb;
         .move_in_valid(move_in_valid),
         .move_in(move_in),
         .no_move(no_move),
+        .delta_in(delta_in),
         .step(step),
         .spray(spray),
 
@@ -113,34 +115,35 @@ module minmax_tb;
         clk_in = 1'b1;
         rst_in = 1'b1;
 
-        stack[0] = 16'b0000000000000000;
-        stack[1] = 16'b0000000000000000;
-        stack[2] = 16'b0000000000000000;
+        stack[0] = 22'b0000000000000000;
+        stack[1] = 22'b0000000000000000;
+        stack[2] = 22'b0000000000000000;
         
         #10;
         rst_in = 1'b0;
         move_in_valid = 1'b0;
         sp = 3'b000;
-        stack_head = 16'b0000000000000000;
+        stack_head = 22'b0000000000000000;
+        delta_in = 6'b111111;
 
         #10;
 
-        `SEND_MOVE(16'b0000000000000001)
+        `SEND_MOVE(22'b0000000000000001)
         `DO_STACK
 
         #100;
 
-        `SEND_MOVE(16'b0000000000000011)
+        `SEND_MOVE(22'b0000000000000011)
         `DO_STACK
 
         #100;
 
-        `SEND_MOVE(16'b0000000000000101)
+        `SEND_MOVE(22'b0000000000000101)
         `DO_STACK
 
         #100;
 
-        `SEND_MOVE(16'b0000000000000110)
+        `SEND_MOVE(22'b0000000000000110)
         `DO_STACK
 
         #100;
@@ -151,17 +154,12 @@ module minmax_tb;
 
         #100;
 
-        `SEND_MOVE(16'b0000000000000100)
+        `SEND_MOVE(22'b0000000000000100)
         `DO_STACK
         
         #100;
 
-        `SEND_MOVE(16'b0000000000000111)
-        `DO_STACK
-        
-        #100;
-
-        `SEND_INVALID
+        `SEND_MOVE(22'b0000000000000111)
         `DO_STACK
         
         #100;
@@ -171,7 +169,12 @@ module minmax_tb;
         
         #100;
 
-        `SEND_MOVE(16'b0000000000000010)
+        `SEND_INVALID
+        `DO_STACK
+        
+        #100;
+
+        `SEND_MOVE(22'b0000000000000010)
         `DO_STACK
         
         #100;

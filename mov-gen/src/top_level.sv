@@ -176,7 +176,7 @@ module top_level(
         .sp(sp_out)
     );
     traverse trav_inst (
-        .clk(0),
+        .clk(clk_in),
         .rst(grst),
 
         // mov-gen interface 
@@ -295,7 +295,7 @@ module debouncer #(parameter CLK_PERIOD_NS = 10,
                   input wire rst_in,
                   input wire dirty_in,
                   output logic clean_out);
-  localparam COUNTER_SIZE = int'($ceil(DEBOUNCE_TIME_MS*1_000_000/CLK_PERIOD_NS));
+  localparam COUNTER_SIZE = int'($ceil(DEBOUNCE_TIME_MS*1/CLK_PERIOD_NS));// TODO: 1_000_000
   localparam COUNTER_WIDTH = $clog2(COUNTER_SIZE);
 
   logic [COUNTER_WIDTH-1:0] counter;

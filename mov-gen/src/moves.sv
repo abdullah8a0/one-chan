@@ -156,7 +156,7 @@ module moves(
                         no_move <= 1;
                     end else begin
                         // if color to move found then move to move state
-                        if (board[from_reg][7:6] == top_col) begin
+                        if (board[from_reg][7:6] != top_col) begin
                             // if any of dx, dx is -2 or 2 then move to move2
                             if (dx == 3'b110 || dx == 3'b010 || dy == 3'b110 || dy == 3'b010) begin
                                 state <= MOVE2;
