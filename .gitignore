@@ -1,3 +1,7 @@
 mov-gen/sim/*.out
 mov-gen/sim/*.vcd
 mov-gen/sim/template_testbench
+mov-gen/obj/*.rpt
+nn_2.txt
+**.png
+

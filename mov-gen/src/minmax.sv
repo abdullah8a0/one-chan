@@ -16,13 +16,16 @@ module traverse #(parameter DEPTH = 3) (
     input wire move_in_valid,
     input wire [15:0] move_in,
     input wire no_move, // exhausted all moves
+    input wire [5:0] delta_in, // delta of the current move 
+
     output logic step,
     output logic spray,
+
 
     // stack interface
     input wire [15:0] stack_head,
     input wire [DEPTH-1:0] sp,
-    output logic [15:0] stack_move_out,
+    output logic [21:0] stack_move_out,
     output logic push,
     output logic pop,
     
@@ -39,7 +42,8 @@ module traverse #(parameter DEPTH = 3) (
 
     localparam STEP_UP = 2'b00; 
     localparam STEP_DOWN = 2'b01; 
-    localparam SPRAY = 2'b10; 
+    localparam SPRAY = 2'b10; // unused for now
+    localparam IDLE = 2'b11;
 
     logic [1:0] state;
     /*
@@ -55,9 +59,22 @@ module traverse #(parameter DEPTH = 3) (
 
     always_ff @(posedge clk ) begin : DRIVE_NEXT_STATE_FF
         if (rst) begin
-            state <= STEP_DOWN;
+            state <= IDLE;
         end else begin
             case (state)
+                IDLE: begin
+                    if (st_full) begin // immediately spray
+                        state <= SPRAY;
+                    end else if (mov_gen_done) begin // if no move step up and pop, otherwise push and step down
+                        if (no_move) begin
+                            state <= STEP_UP;
+                        end else begin
+                            state <= STEP_DOWN;
+                        end
+                    end else begin
+                        state <= STEP_DOWN;
+                    end
+                end
                 STEP_DOWN: begin
                     if (st_full) begin // immediately spray
                         state <= SPRAY;
@@ -73,7 +90,9 @@ module traverse #(parameter DEPTH = 3) (
                 end
                 STEP_UP: begin
                     if (st_empty && no_move) begin // output the current move
-                        state <= SPRAY;
+                        state <= IDLE;
+                        // output stack size
+                        best_move_out <= stack_head;
                     end else if (mov_gen_done) begin // if no move step up and pop, otherwise push and step down
                         if (no_move) begin
                             state <= STEP_UP;
@@ -94,23 +113,31 @@ module traverse #(parameter DEPTH = 3) (
 
     always_comb begin : DRIVE_OUTPUTS_COMB
         case (state)
+            IDLE: begin
+                push = 1'b0;
+                pop = 1'b0;
+                step = 1'b0;
+                spray = 1'b0;
+                stack_move_out = 0;
+            end
             STEP_DOWN: begin
                 push = !st_full && move_in_valid;
                 pop = st_full || no_move;
-                stack_move_out = move_in;
+                stack_move_out = {delta_in, move_in};
                 step = !st_full && move_in_valid;
                 spray = 1'b0;  
             end
             STEP_UP: begin
                 push = move_in_valid;
                 pop = !st_empty && (no_move || st_full);
-                stack_move_out = move_in;
+                stack_move_out = {delta_in, move_in};
                 step = 1'b0;
                 spray = st_empty && no_move;
             end
             SPRAY: begin
                 push = 1'b0;
                 pop = 1'b0;
+                stack_move_out = 0;
                 step = 1'b0;
                 spray = 1'b1;
                 // TODO: figure out spray

@@ -15,12 +15,10 @@ module stack #(parameter DEPTH = 3) (
     input wire rst,
     input wire push,
     input wire pop,
-    input wire [15:0] data_in, 
-    output logic [15:0] data_out,
+    input wire [21:0] data_in, //{delta, move}
+    output logic [21:0] data_out,
     output logic [DEPTH-1:0] sp // points to next free space
     );
-    // OH: how to write good state machines in verilog? 
-    // OH: how to do combinational logic in always_ff?
     // meta data values
     localparam NONE = 4'b1111; 
     localparam PAWN = 4'b0000;
@@ -31,7 +29,7 @@ module stack #(parameter DEPTH = 3) (
     localparam KING = 4'b0101;
     
     logic [DEPTH-1:0] sp_minus_one;
-    stack_mov_t stack [DEPTH-1:0];
+    logic [21:0] stack [DEPTH-1:0];
 
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -51,7 +49,7 @@ module stack #(parameter DEPTH = 3) (
 
 
     // data_out is the top of the stack
-    assign data_out = (sp == 0)?{6'b0, 6'b0, NONE}:stack[sp_minus_one];
+    assign data_out = (sp == 0)?{6'b0, 6'b0, 6'b0, NONE}:stack[sp_minus_one];
 
 endmodule
 

@@ -19,7 +19,7 @@ module spi_host #(
     output logic clk_out,
     output logic sel_out,
     output logic [DATA_WIDTH-1:0] data_out
-);
+);  
 
     localparam IDLE = 0;
     localparam START = 1;
@@ -67,7 +67,7 @@ module spi_host #(
 
     // send 
     always_ff @(posedge clk or negedge nrst) begin
-        if(~nrst) sel_out <= 1;
+        if (~nrst) sel_out <= 1;
         else if((state==LOAD) && finish_load) sel_out <= 0;
         else if(state==SEND) sel_out <= (finish_send) ? 1 : 0;
         else sel_out <= 1;

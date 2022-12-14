@@ -14,6 +14,7 @@ module moves_tb;
     logic spray;
 
     logic [15:0] stack_top;
+    logic [5:0] delta;
     logic [3:0] sp;
 
     logic move_out_valid;
@@ -35,6 +36,7 @@ module moves_tb;
 
         // stack interface
         .stack_top(stack_top),
+        .delta(delta),
         .sp(sp),
 
         .move_out_valid(move_out_valid),
@@ -129,10 +131,18 @@ module moves_tb;
         $dumpvars(0, moves_tb); 
         clk_in = 1'b0;
         rst_in = 1'b1;
-        #10;
+        sp = 4'b0000;
+        stack_top = 16'b0000000000000000;
+        delta = 6'b111111;
+        top_col = 2'b10;
+        step = 1'b0;
+        spray = 1'b0;
+        
+        #300;
         rst_in = 1'b0;
         sp = 4'b0000;
         stack_top = 16'b0000000000000000;
+        delta = 6'b111111;
         top_col = 2'b10;
 
         #10;
@@ -141,7 +151,42 @@ module moves_tb;
         #10;
         step = 1'b0;
 
-        #1000
+        // stack_top = 16'b0111010000000000;
+        // delta = 6'b111001;
+        #400;
+        
+
+        $finish;
+        #10;
+        step = 1'b1;
+
+        #10;
+        step = 1'b0;
+
+        stack_top = 16'b0111010000000000;
+        delta = 6'b000000;
+        #400;
+
+
+        #10;
+        step = 1'b1;
+
+        #10;
+        step = 1'b0;
+
+        stack_top = 16'b0111010000000000;
+        delta = 6'b001001;
+        #400;
+
+        #10;
+        step = 1'b1;
+
+        #10;
+        step = 1'b0;
+
+        #1000;
+
+
         $finish;
     end
 endmodule

@@ -12,7 +12,7 @@ Each 8-bit board position looks like:
 pos.piece = 6 bit; // holds the piece in one-hot encoding
 pos.color = 2 bit; // holds the color in one-hot encoding
 */
-typedef logic [7:0] board_pos_t;
+// typedef logic [7:0] board_pos_t;
 // board pos is 8 bits, extract data using macros
 `define piece(board_pos) (board_pos[5:0])
 `define color(board_pos) (board_pos[7:6])
@@ -26,7 +26,7 @@ mov.src = 6 bit;
 mov.dst = 6 bit;
 mov.meta = 4 bit; // holds the taken piece
 */
-typedef logic [15:0] stack_mov_t;
+// typedef logic [15:0] stack_mov_t;
 
 `define src(stack_mov) (stack_mov[15:10])
 `define dst(stack_mov) (stack_mov[9:4])
@@ -46,15 +46,21 @@ module top_level(
     input wire btnl,
 
     output logic ca, cb, cc, cd, ce, cf, cg, dp,
-    output logic [7:0] an
+    output logic [7:0] an,
+    //leds
+    output logic [15:0] led
 );
+
     logic grst;
+    logic start_calc;
     assign grst = btnc;
     logic clean_down, clean_up, clean_right, clean_left;
     logic old_clean_down, old_clean_up, old_clean_right, old_clean_left;
 
     logic [11:0] move_in;
+    logic [3:0] meta_in;
     assign move_in = sw[11:0];
+    assign meta_in = sw[15:12];
 
     debouncer up_cleaner( // scroll up
         .clk_in(clk_in),
@@ -117,6 +123,7 @@ module top_level(
     localparam BLACK     = 2'b10;
 
     logic [7:0] row_to_show [7:0];
+    logic [1:0] col_to_mov;
 
     logic [7:0] board [63:0];
     always_ff @(posedge clk_in) begin : DRIVE_IO
@@ -129,27 +136,78 @@ module top_level(
     end
 
     logic [2:0] sp_out;
-    logic push_in, pop_in;
-    logic [15:0] stack_data_in, stack_data_out;
+    logic [21:0] stack_data_in, stack_data_out;
 
 
-    stack stack_inst (
-        .clk(clk_in),
-        .rst(grst),
-        .push(push_in),
-        .pop(pop_in),
-        .data_in(stack_data_in), 
-        .data_out(stack_data_out),
-        .sp(sp_out) 
-    );
+    logic force_move;
+    logic [15:0] forced_board_move;
 
     board_rep board_inst (
         .clk(clk_in),
         .rst(grst),
+        .force_move(force_move),
+        .forced_board_move(forced_board_move),
         .sp(sp_out),
-        .stack_head(stack_data_out),
-        .board(board)
+        .stack_head(stack_data_out[15:0]),
+        .board(board),
+        .color_to_move(col_to_mov)
     );
+
+
+
+    moves mov_inst (
+        .clk(clk_in),
+        .rst(grst),
+
+        // board interface
+        .board(board),
+        .top_col(col_to_mov),
+
+        // mov-gen interface 
+        .step(trav_inst.step || start_calc),
+        // .step(start_calc),
+        .spray(trav_inst.spray),
+
+        // stack interface
+        // .stack_top(16'b0000000000000000),
+        // .delta(6'b111111),
+        .stack_top((start_calc)? 16'b0 : stack_data_out[15:0]),
+        .delta((start_calc)? 6'b111111: stack_data_out[21:16]),
+        .sp(sp_out)
+    );
+    traverse trav_inst (
+        .clk(0),
+        .rst(grst),
+
+        // mov-gen interface 
+        .move_in_valid(mov_inst.move_out_valid),
+        .move_in(mov_inst.move_out),
+        .no_move(mov_inst.no_move),
+        .delta_in(mov_inst.delta_out),
+
+
+        // stack interface
+        .stack_head(stack_data_out[15:0]),
+        .sp(sp_out),
+        .stack_move_out(stack_data_in),
+
+        
+        .best_move_out()//led)// TODO add led output
+    );
+
+    stack stack_inst (
+        .clk(clk_in),
+        .rst(grst),
+        .push(trav_inst.push),
+        .pop(trav_inst.pop),
+        .data_in(stack_data_in),
+        .data_out(stack_data_out),
+        .sp(sp_out) 
+    );
+
+
+
+
     localparam META_NONE = 4'b1111; 
     localparam META_PAWN = 4'b0000;
     localparam META_KNIGHT = 4'b0001;
@@ -171,22 +229,50 @@ module top_level(
         endcase
     end
 
-    always_ff @(posedge clk_in) begin : DRIVE_STACK
+    always_ff @(posedge clk_in) begin : DRIVE_MOVE
         if (old_clean_right && !clean_right) begin
+            start_calc <= 1'b1;
+            force_move <= 1'b0;
             // push
-            stack_data_in <= {sw[12:0], meta_at_pos}; 
-            push_in <= 1'b1;
+            // stack_data_in <= {sw[12:0], meta_at_pos}; 
+            // push_in <= 1'b1;
         end else if (old_clean_left && !clean_left) begin
-            // pop
-            pop_in <= 1'b1;
+            // // pop
+            // pop_in <= 1'b1;
+            force_move <= 1'b1;
+            start_calc <= 1'b0;
+            forced_board_move <= {sw[11:0], meta_at_pos};
+
         end else begin
-            push_in <= 1'b0;
-            pop_in <= 1'b0;
+            start_calc <= 1'b0;
+            force_move <= 1'b0;
+            // push_in <= 1'b0;
+            // pop_in <= 1'b0;
         end
     end
+    extender ext_start (
+        .clk(clk_in),
+        .rst(grst),
+        .in(start_calc)
+    );
+    extender ext_force (
+        .clk(clk_in),
+        .rst(grst),
+        .in(force_move)
+    );
+    extender ext_move (
+        .clk(clk_in),
+        .rst(grst),
+        .in(mov_inst.move_out_valid)
+    );
 
 
-    
+
+    assign led[15] = col_to_mov;
+    assign led[14] = ext_start.ext_out;
+    assign led[13] = ext_force.ext_out;
+    assign led[12] = ext_move.ext_out;
+    assign led[11:0] = mov_inst.move_out;
 
     seven_seg seven_seg_inst(
         .clk(clk_in),
@@ -234,5 +320,43 @@ module debouncer #(parameter CLK_PERIOD_NS = 10,
     end
   end
 endmodule
+
+// takes a 10ns clk cycle pulse and generates a 0.5 s pulse
+module extender
+(
+    input wire clk,
+    input wire rst,
+    input wire in,
+    output logic ext_out
+);
+    localparam COUNTER_SIZE = 50_000_000;
+    localparam COUNTER_WIDTH = $clog2(COUNTER_SIZE);
+
+    logic [COUNTER_WIDTH-1:0] counter;
+    logic old_sig_in;
+
+    always_ff @(posedge clk) begin: DINSHIFT
+        old_sig_in <= in;
+    end
+
+    always_ff @(posedge clk) begin: MAINDEBOUNCE
+        if (in) begin
+            counter <= 0;
+            ext_out <= 1'b0;
+        end else begin
+            if (in != old_sig_in) begin
+                counter <= COUNTER_SIZE;
+                ext_out <= 1'b1;
+            end else if (counter == 0)begin
+                ext_out <= 1'b0;
+            end else begin
+                counter <= counter - 1;
+            end
+        end
+    end
+endmodule
+
+
+
 
 `default_nettype wire

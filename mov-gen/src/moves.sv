@@ -19,16 +19,18 @@ module moves(
 
     // stack interface
     input wire [15:0] stack_top,
+    input wire [5:0] delta,
     input wire [3:0] sp,
 
     output logic move_out_valid,
     output logic [11:0] move_out,
-    output logic no_move // exhausted all moves
+    output logic no_move, // exhausted all moves
+    output logic [5:0] delta_out
     );
 
     logic [5:0] from_reg;
-    logic unsigned [2:0] dx;
-    logic unsigned [2:0] dy;
+    logic [2:0] dx;
+    logic [2:0] dy;
 
     // states
     localparam SEARCH = 2'b00;
@@ -37,6 +39,68 @@ module moves(
     localparam IDLE = 2'b11;
 
     logic [1:0] state;
+
+    // (-2,-2) -> (2,2)
+    function logic target_xy (logic [5:0] piece, logic [2:0] x, logic [2:0] y); // x,y signed 3 bit
+        
+        localparam KING      = 6'b000001;
+        localparam QUEEN     = 6'b000010;
+        localparam ROOK      = 6'b000100;
+        localparam KNIGHT    = 6'b001000;
+        localparam BISHOP    = 6'b010000;
+        localparam PAWN      = 6'b100000;
+
+
+        case ({x, y}) // x,y := {0, 1, 2, -1, -2}
+
+            // x = 0, y = 0, 1, 2, -1, -2
+            6'b000000: return 0;
+
+            6'b000001: return piece == KING || piece == QUEEN || piece == ROOK;
+            6'b000010: return piece == QUEEN || piece == ROOK;
+
+            6'b000111: return piece == KING || piece == QUEEN || piece == ROOK;
+            6'b000110: return piece == QUEEN || piece == ROOK;
+
+            // x = 1, y = 0, 1, 2, -1, -2
+            6'b001000: return piece == KING || piece == QUEEN || piece == ROOK;
+
+            6'b001001: return piece == KING || piece == QUEEN || piece == BISHOP;
+            6'b001010: return piece == KNIGHT;
+
+            6'b001111: return piece == KING || piece == QUEEN || piece == BISHOP;
+            6'b001110: return piece == KNIGHT;
+
+            // x = 2, y = 0, 1, 2, -1, -2
+            6'b010000: return piece == QUEEN || piece == ROOK;
+
+            6'b010001: return piece == KNIGHT;
+            6'b010010: return piece == QUEEN || piece == BISHOP;
+
+            6'b010111: return piece == KNIGHT;
+            6'b010110: return piece == QUEEN || piece == BISHOP;
+
+            // x = -1, y = 0, 1, 2, -1, -2
+            6'b111000: return piece == KING || piece == QUEEN || piece == ROOK;
+
+            6'b111001: return piece == KING || piece == QUEEN || piece == BISHOP;
+            6'b111010: return piece == KNIGHT;
+
+            6'b111111: return piece == KING || piece == QUEEN || piece == BISHOP;
+            6'b111100: return piece == KNIGHT;
+
+            // x = -2, y = 0, 1, 2, -1, -2
+            6'b100000: return piece == QUEEN || piece == ROOK;
+
+            6'b110001: return piece == KNIGHT;
+            6'b110010: return piece == QUEEN || piece == BISHOP;
+
+            6'b110111: return piece == KNIGHT;
+            6'b110110: return piece == QUEEN || piece == BISHOP;
+            default: return 0;
+        endcase
+
+    endfunction
 
 
 
@@ -70,123 +134,104 @@ module moves(
             from_reg <= 0;
             move_out_valid <= 0;
             no_move <= 0;
-        end
-    end
+            move_out <= 0;
+            delta_out <= 0;
 
-    always_ff @(posedge clk) begin 
-        case (state)
-            IDLE: begin
-                if (step) begin
-                    state <= SEARCH;
-                    from_reg <= stack_top[15:10]; // from continues from stack top
+        end else begin
+            case (state)
+                IDLE: begin
+                    if (step) begin
+                        state <= SEARCH;
+                        from_reg <= stack_top[15:10]; // from continues from stack top
+                        dy <= delta[5:3];
+                        dx <= delta[2:0];
+                    end
+                    no_move <= 0;
+                    move_out_valid <= 0;
                 end
-                no_move <= 0;
-                move_out_valid <= 0;
-            end
-            SEARCH: begin
-                if (from_reg == 63) begin
-                    state <= IDLE;
-                    no_move <= 1;
-                end else begin
-                    // if color to move found then move to move state
-                    if (board[from_reg][7:6] == top_col) begin
+                SEARCH: begin
+                    if (from_reg == 63) begin
+                        state <= IDLE;
+                        delta_out <= delta;
+                        no_move <= 1;
+                    end else begin
+                        // if color to move found then move to move state
+                        if (board[from_reg][7:6] == top_col) begin
+                            // if any of dx, dx is -2 or 2 then move to move2
+                            if (dx == 3'b110 || dx == 3'b010 || dy == 3'b110 || dy == 3'b010) begin
+                                state <= MOVE2;
+                            end else begin
+                                state <= MOVE1;
+                            end
+                        end else begin
+                            // else increment from
+                            from_reg <= from_reg + 1;
+                            dx <= 3'b111;
+                            dy <= 3'b111;
+                        end
+                        
+                    end
+                end
+                MOVE1: begin
+                    if (dx == 3'b001 && dy == 3'b001) begin
                         dx <= 3'b110;
                         dy <= 3'b110;
-                        state <= MOVE;
-                    end else begin
-                        // else increment from
-                        from_reg <= from_reg + 1;
-                    end
-                    
-                end
-            end
-            MOVE: begin
-                if (dx == 3'b01 && dy == 3'b010) begin
-                    from_reg <= from_reg + 1;
-                    state <= SEARCH;
-                end else begin // increment to
-                    if (dx == 3'b010) begin
-                        dx <= 3'b110;
-                        dy <= dy + 1;
-                    end else begin
-                        dx <= dx + 1;
-                    end
-                    if (in_bounds(from_reg,dx,dy)) begin
-                        if (target_xy(board[from_reg][5:0], dx, dy)) begin
-                            move_out_valid <= 1;
-                            move_out <= {from_reg, from_reg[5:3] + dy, from_reg[2:0] + dx};
-                            state <= IDLE; // only need one move
+                        state <= MOVE2;
+                    end else begin // increment to
+                        if (dx == 3'b001) begin
+                            dx <= 3'b111;
+                            dy <= dy + 1;
+                        end else begin
+                            dx <= dx + 1;
+                        end
+                        if (in_bounds(from_reg,dx,dy)) begin
+                            if (target_xy(board[from_reg][5:0], dx, dy)) begin
+                                move_out_valid <= 1;
+                                move_out <= {from_reg, from_reg[5:3] + dy, from_reg[2:0] + dx};
+                                state <= IDLE; // only need one move
+                                // set delta_out
+                                delta_out <= {dy+1'b1,(dx == 3'b001) ? 3'b111 :  dx+1'b1};
+                            end
                         end
                     end
                 end
-            end
-       endcase 
+                MOVE2: begin
+                    if (dx == 3'b010 && dy == 3'b010) begin
+                        from_reg <= from_reg + 1;
+                        state <= SEARCH;
+                    end else begin // increment to
+                        if (dx == 3'b010) begin
+                            dx <= 3'b110;
+                            dy <= dy + 1;
+                        end else begin
+                            // dy = -2,2. Do dx = -2,-1,0,1,2
+                            // otherwise do dx = -2,0,2
+                            if (dy == 3'b110 || dy == 3'b010) begin
+                                dx <= dx + 1;
+                            end else begin
+                                dx <= dx + 2;
+                            end
+                        end
+                        if (in_bounds(from_reg,dx,dy)) begin
+                            // TODO: check here for blockage
+                            if (target_xy(board[from_reg][5:0], dx, dy)) begin
+                                move_out_valid <= 1;
+                                move_out <= {from_reg, from_reg[5:3] + dy, from_reg[2:0] + dx};
+                                state <= IDLE; // only need one move
+                                // set delta_out
+
+                                delta_out <= (dx == 3'b010) ? {dy+1'b1,3'b110} : ( (dy == 3'b010 || dy == 3'b110) ? {dy,dx+1'b1} : {dy,dx+2'b10});
+
+                            end
+                        end
+                    end
+                end
+        endcase 
+        end
     end
 endmodule
 
 
-
-// (-2,-2) -> (2,2)
-function logic target_xy (logic [5:0] piece, logic [2:0] x, logic [2:0] y); // x,y signed 3 bit
-    
-    localparam KING      = 6'b000001;
-    localparam QUEEN     = 6'b000010;
-    localparam ROOK      = 6'b000100;
-    localparam KNIGHT    = 6'b001000;
-    localparam BISHOP    = 6'b010000;
-    localparam PAWN      = 6'b100000;
-
-
-    case ({x, y}) // x,y := {0, 1, 2, -1, -2}
-
-        // x = 0, y = 0, 1, 2, -1, -2
-        6'b000000: return 0;
-
-        6'b000001: return piece == KING || piece == QUEEN || piece == ROOK;
-        6'b000010: return piece == QUEEN || piece == ROOK;
-
-        6'b000111: return piece == KING || piece == QUEEN || piece == ROOK;
-        6'b000110: return piece == QUEEN || piece == ROOK;
-
-        // x = 1, y = 0, 1, 2, -1, -2
-        6'b001000: return piece == KING || piece == QUEEN || piece == ROOK;
-
-        6'b001001: return piece == KING || piece == QUEEN || piece == BISHOP;
-        6'b001010: return piece == KNIGHT;
-
-        6'b001111: return piece == KING || piece == QUEEN || piece == BISHOP;
-        6'b001110: return piece == KNIGHT;
-
-        // x = 2, y = 0, 1, 2, -1, -2
-        6'b010000: return piece == QUEEN || piece == ROOK;
-
-        6'b010001: return piece == KNIGHT;
-        6'b010010: return piece == QUEEN || piece == BISHOP;
-
-        6'b010111: return piece == KNIGHT;
-        6'b010110: return piece == QUEEN || piece == BISHOP;
-
-        // x = -1, y = 0, 1, 2, -1, -2
-        6'b111000: return piece == KING || piece == QUEEN || piece == ROOK;
-
-        6'b111001: return piece == KING || piece == QUEEN || piece == BISHOP;
-        6'b111010: return piece == KNIGHT;
-
-        6'b111111: return piece == KING || piece == QUEEN || piece == BISHOP;
-        6'b111100: return piece == KNIGHT;
-
-        // x = -2, y = 0, 1, 2, -1, -2
-        6'b100000: return piece == QUEEN || piece == ROOK;
-
-        6'b110001: return piece == KNIGHT;
-        6'b110010: return piece == QUEEN || piece == BISHOP;
-
-        6'b110111: return piece == KNIGHT;
-        6'b110110: return piece == QUEEN || piece == BISHOP;
-        default: return 0;
-    endcase
-
-endfunction
 
 
 `default_nettype wire
