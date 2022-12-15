@@ -332,12 +332,31 @@ module sender (
         end else begin
             case (state)
                 IDLE: begin
-                    if (cnt == 255) begin
+                    load_id <= board[cnt];
+                    load_iv <= 1'b1;
+                    if (cnt == 63) begin
                         state <= MOV_RCV;
                         cnt <= 0;
                     end else begin
-                        load_id <= board[cnt];
-                        load_iv <= 1'b1;
+                        cnt <= cnt + 1;
+                    end
+                end
+                MOV_RCV: begin // put moves in buffer untill we get no_move, then send them
+                    if (move_valid) begin
+                        move_buf[cnt] <= move;
+                        cnt <= cnt + 1;
+                    end else if (no_move) begin
+                        state <= MOV_SEND;
+                        cnt <= 0;
+                    end
+                end
+                MOV_SEND: begin
+                    load_id <= move_buf[cnt];
+                    load_iv <= 1'b1;
+                    if (cnt == 255) begin
+                        state <= IDLE;
+                        cnt <= 0;
+                    end else begin
                         cnt <= cnt + 1;
                     end
                 end
