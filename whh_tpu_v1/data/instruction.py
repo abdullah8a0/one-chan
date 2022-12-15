@@ -290,9 +290,9 @@ print('\n')
 
 # move_max_value = dnn_out;
 print('instruction number: ', len(instr), ' move_max_value = dnn_out;')
-instr.append(assembly2mach(instr_type=ARITHMETIC, src1_addr=DNN_OUT, 
+instr.append(assembly2mach(instr_type=ARITHMETIC, src1_addr=MOVE_CURRENT, 
                             src2_sel=SRC2_SEL_REG, src2_addr=ZERO, immediate=0, 
-                            rd_group=0, rd_addr=MOVE_MAX_VALUE, 
+                            rd_group=0, rd_addr=MOVE_MAX, 
                             label=0, funct=ADD, special_funct=0))
 print(hex(instr[len(instr)-1]))
 print('\n')
