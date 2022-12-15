@@ -4,7 +4,7 @@ module spi_slave #(
     parameter DATA_WIDTH = 8,// output 1 byte(8-bit) at one spi_clk cycle
     parameter BIT_DUR = 2,
     parameter BYTE_STORE = 250 // maximum store data in interface before send data
-    )( 
+)( 
     input wire clk, 
     input wire nrst,
     
@@ -14,7 +14,7 @@ module spi_slave #(
 
     output logic spi_ov,
     output logic [DATA_WIDTH-1:0] spi_od 
-    );
+);
 
     localparam IDLE = 0;
     localparam RECE = 1;

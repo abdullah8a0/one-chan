@@ -195,7 +195,16 @@ module top_level(
         .best_move_out()//led)// TODO add led output
     );
 
-    sender send_inst
+    sender u_sender(
+        .clk                      ( clk_in                      ),
+        .rst                      ( grst                      ),
+        .move                     (mov_inst.move_out        ),
+        .move_valid               ( mov_inst.move_out_valid ),
+        .no_move                ( mov_inst.no_move        )
+    );
+
+    assign led = u_sender.data_out;
+
 
     stack stack_inst (
         .clk(clk_in),
@@ -206,6 +215,9 @@ module top_level(
         .data_out(stack_data_out),
         .sp(sp_out) 
     );
+
+
+
 
 
 
@@ -270,11 +282,11 @@ module top_level(
 
 
 
-    assign led[15] = col_to_mov;
-    assign led[14] = ext_start.ext_out;
-    assign led[13] = ext_force.ext_out;
-    assign led[12] = ext_move.ext_out;
-    assign led[11:0] = mov_inst.move_out;
+    // assign led[15] = col_to_mov;
+    // assign led[14] = ext_start.ext_out;
+    // assign led[13] = ext_force.ext_out;
+    // assign led[12] = ext_move.ext_out;
+    // assign led[11:0] = mov_inst.move_out;
 
     seven_seg seven_seg_inst(
         .clk(clk_in),
@@ -296,7 +308,9 @@ module sender (
     input wire [7:0] board [63:0],
     input wire [5:0] move,
     input wire move_valid,
-    input wire no_move
+    input wire no_move,
+
+    output logic [15:0] data_out
     );
 
     logic load_iv;
@@ -308,56 +322,97 @@ module sender (
     localparam IDLE = 2'b00; // fills board
     localparam MOV_RCV = 2'b01; // buffers move
     localparam MOV_SEND = 2'b10; // sends move
+    
 
 
     spi_host spi_host_inst(
         .clk(clk),
         .nrst(~rst),
         .load_iv(load_iv),
-        .load_id(load_id),
+        .load_id(load_id)
     
-        .clk_out(),
-        .sel_out(),
-        .data_out()
+        // .clk_out(clk_in),
+        // .sel_out(sel_in),
+        // .data_out(data_in)
     );
+    Tiny_TPU_top tpu_inst (
+        .clk     ( clk     ),
+        .nrst    ( ~rst    ),
+
+        .clk_in  (spi_host_inst.clk_out),
+        .sel_in  ( spi_host_inst.sel_out ),
+        .data_in ( spi_host_inst.data_out )
+
+        // .clk_out ( clk_out ),
+        // .sel_out ( sel_out ),
+        // .data_out  ( data_out  )
+    );
+    logic [7:0] outbuffer[ 1:0];
+    logic outcnt ;
+    assign data_out = {outbuffer[1], outbuffer[0]};
+    spi_slave u_spi_slave(
+        .clk          ( clk          ),
+        .nrst         ( ~rst         ),
+        .clk_in       ( tpu_inst.clk_out ),
+        .sel_in       ( tpu_inst.sel_out ),
+        .data_in      ( tpu_inst.data_out )
+    );
+    // recieve 2 bytes  
+    always @(posedge clk) begin
+        if (u_spi_slave.spi_ov) begin
+            outbuffer[outcnt] <= u_spi_slave.spi_od;
+            outcnt <= outcnt + 1;
+        end else if (rst) begin
+            outcnt <= 0;
+            outbuffer[0] <= 8'b00_00_00_00;
+            outbuffer[1] <= 8'b00_00_00_00;
+        end
+        
+    end
+
+
+    parameter BOARD_HEADER = 8'b11_01_01_01;
+    parameter MOVE_HEADER = 8'b11_10_10_10;
 
     logic [10:0] cnt;
-    // fill the load_id with the board in idle state
+    // fill the load_id with the board in idle state.
+    // BOARD_HEADER, board, MOVE_HEADER, ...
     always_ff @(posedge clk ) begin
         if (rst) begin
-            load_id <= 8'b00000000;
-            load_iv <= 1'b0;
+            load_id <= BOARD_HEADER;
+            load_iv <= 1'b1;
             state <= IDLE;
             cnt <= 0;
         end else begin
             case (state)
                 IDLE: begin
-                    load_id <= board[cnt];
-                    load_iv <= 1'b1;
                     if (cnt == 63) begin
+                        load_id <= MOVE_HEADER;
+                        load_iv <= 1'b1;
                         state <= MOV_RCV;
                         cnt <= 0;
                     end else begin
+                        load_id <= board[cnt];
+                        load_iv <= 1'b1;
                         cnt <= cnt + 1;
                     end
                 end
                 MOV_RCV: begin // put moves in buffer untill we get no_move, then send them
                     if (move_valid) begin
-                        move_buf[cnt] <= move;
+                        move_buf[cnt<<1] <= {2'b00, move};
+                        move_buf[cnt<<1 + 1] <= 8'b00_00_00_00;
                         cnt <= cnt + 1;
                     end else if (no_move) begin
                         state <= MOV_SEND;
-                        cnt <= 0;
                     end
                 end
                 MOV_SEND: begin
-                    load_id <= move_buf[cnt];
+                    load_id <= move_buf[cnt<<1];
                     load_iv <= 1'b1;
-                    if (cnt == 255) begin
+                    if (cnt == 0) begin
                         state <= IDLE;
-                        cnt <= 0;
                     end else begin
-                        cnt <= cnt + 1;
+                        cnt <= cnt - 2;
                     end
                 end
             endcase
