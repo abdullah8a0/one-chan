@@ -293,7 +293,7 @@ endmodule
 module sender (
     input wire clk,
     input wire rst,
-    input wire [15:0] board,
+    input wire [7:0] board [63:0],
     input wire [5:0] move,
     input wire move_valid,
     input wire no_move
@@ -320,9 +320,30 @@ module sender (
         .sel_out(),
         .data_out()
     );
-    // fill the load_id with the board
 
-
+    logic [10:0] cnt;
+    // fill the load_id with the board in idle state
+    always_ff @(posedge clk ) begin
+        if (rst) begin
+            load_id <= 8'b00000000;
+            load_iv <= 1'b0;
+            state <= IDLE;
+            cnt <= 0;
+        end else begin
+            case (state)
+                IDLE: begin
+                    if (cnt == 255) begin
+                        state <= MOV_RCV;
+                        cnt <= 0;
+                    end else begin
+                        load_id <= board[cnt];
+                        load_iv <= 1'b1;
+                        cnt <= cnt + 1;
+                    end
+                end
+            endcase
+        end
+    end
 
 endmodule
 
