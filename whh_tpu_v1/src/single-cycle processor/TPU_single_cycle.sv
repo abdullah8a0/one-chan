@@ -136,6 +136,9 @@ module TPU #(
     logic received_SA_od;
     logic send_sd;
 
+    logic op_move_ov;
+    logic [MOVE_WIDTH-1:0] op_move_od;
+
     register_file#(
         .WIDTH                   ( 8 ),
         .HEIGHT                  ( 8 ),
@@ -191,8 +194,8 @@ module TPU #(
 
         .dnn_iv                  ( dnn_ov_u_buf      ),
         .dnn_id                  ( dnn_od_u_buf      ),
-        .op_move_ov              (  max_dnn_ov        ),
-        .op_move_od              ( max_dnn_od       ),
+        .op_move_ov              ( op_move_ov ),
+        .op_move_od              (   op_move_od     ),
         
         .next_pc                 ( next_pc           ),
         .received_SA_od          ( received_SA_od          )
@@ -348,8 +351,37 @@ module TPU #(
         .mul_od          ( layer_mul_d_sa          )
     );
     
-    assign spi_ov = max_dnn_ov;
-    assign spi_od = max_dnn_od;
+
+    logic [15:0] b_op_move;
+    always_ff @(posedge clk or negedge nrst) begin
+        if(~nrst) b_op_move <= 0;
+        else if(op_move_ov) b_op_move <= op_move_od;
+        else b_op_move <= 0;
+    end
+
+    logic cnt;
+    always_ff @(posedge clk or negedge nrst) begin
+        if(~nrst) begin
+            spi_ov <= 0;
+            spi_od <= 0;
+            cnt <= 0;
+        end
+        else if(op_move_ov) begin
+            spi_ov <= 1;
+            spi_od <= op_move_od[15:8];
+            cnt <= 1;
+        end
+        else if(cnt) begin
+            spi_ov <= 1;
+            spi_od <= b_op_move[7:0];
+            cnt <= 0;
+        end
+        else begin
+            spi_ov <= 0;
+            spi_od <= 0;
+            cnt <= 0;
+        end
+    end
 
 endmodule
 

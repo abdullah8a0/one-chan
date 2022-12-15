@@ -7,6 +7,7 @@
 
 int move_total_num;
 int move_current_num;
+int move_current;
 int move_max_value;
 
 int layer_num_info;

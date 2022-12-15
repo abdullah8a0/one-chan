@@ -79,7 +79,7 @@ module register_file#(
 
     // optimal output send
     output logic op_move_ov,
-    output logic [DATA_WIDTH-1:0] op_move_od,
+    output logic [MOVE_WIDTH-1:0] op_move_od,
 
     // pc control
     output logic next_pc,
@@ -130,30 +130,28 @@ module register_file#(
                     ((state==SA_COMPUTE) && received_SA_od);
 
 // first group of registers
-    logic [31:0] zero;
-    assign zero = 0; // all the time keep 0
-
     logic [`TOTAL_REG_NUM-1:0][31:0] X_w; // mapping for all the registers in the first group
-    assign X_w[0] = 0;
+    // assign X_w[0] = 0;
 
     // since not all the register has length of 32
     always_ff @(posedge clk or negedge nrst) begin
         if(~nrst) X_w <= 0;
         else if(wrb_en) begin
-            for(int i=1; i<`TOTAL_REG_NUM; i=i+1) begin
-                if(i==rd_addr[5:0] && rd_addr[7:6]==2'b00) begin
-                    for(int j=1; j<32; j=j+1) begin
+            for(int i=0; i<`TOTAL_REG_NUM; i=i+1) begin
+                if(i==rd_addr[4:0] && rd_addr[7:6]==2'b00) begin
+                    for(int j=0; j<32; j=j+1) begin
                         if(j<X_WIDTH[i]) X_w[i][j] <= wrb_value[j];
                         else X_w[i][j] <= wrb_value[X_WIDTH[i]-1];
                     end
                 end
                 else X_w[i] <= X_w[i];
+
+                if(i==`MOVE_CURRENT && move_current_iv) X_w[i] <= move_current_id;
             end
         end
-        else begin // special instruction            
+        else begin // special instruction           
             for(int i=1; i<`TOTAL_REG_NUM; i=i+1) begin
                 if(i==`MOVE_TOTAL_NUM && move_iv) X_w[i] <= total_move_id;
-                if(i==`MOVE_CURRENT && move_current_iv) X_w[i] <= move_current_id;
                 if(i==`DNN_OUT && dnn_iv) X_w[i] <= $signed(dnn_id);
 
                 // decode layer
@@ -319,7 +317,7 @@ module register_file#(
     assign bias_od = bias_reg;
     assign layer_info_ov = send_layer_info;
     
-    assign op_move_od = X_w[`MOVE_MAX_VALUE];
+    assign op_move_od = X_w[`MOVE_MAX];
     assign op_move_ov = send_optimal_move;
 
     assign move_current_num = X_w[`MOVE_CURRENT_NUM];

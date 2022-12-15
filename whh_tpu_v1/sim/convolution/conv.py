@@ -13,10 +13,10 @@ def convolution2d(image, kernel, bias):
                 new_image[i][j] = np.sum(image[i:i+m, j:j+m]*kernel) + bias
         return new_image
 
-mat1 = np.array([[68, 72, 80, 66, 65, 80, 72, 68],
+mat1 = np.array([[127, 72, 80, 66, 65, 80, 72, 68],
                  [96, 96, 96, 96, 96, 96, 96, 96],
                  [127,127,127,127,127,127,127,127],
-                 [127,127,127,127,127,127,127,127],
+                 [127,127,127,68,127,127,127,127],
                  [127,127,127,127,127,127,127,127],
                  [127,127,127,127,127,127,127,127],
                  [160,160,160,160,160,160,160,160],
@@ -74,7 +74,6 @@ print(conv2_w_i, conv2_b_i)
 print(mul0_w_i, mul0_b_i)
 print(mul1_w_i, mul1_b_i)
 
-bin(np.binary_repr(conv0_b_i, width=8))
 
 mat2 = convolution2d(mat1, conv0_w, conv0_b)
 mat2 = np.int32(mat2)

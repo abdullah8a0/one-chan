@@ -4,7 +4,7 @@ module Tiny_TPU_top#(
     parameter DATA_WIDTH = 8,// output 1 byte(8-bit) at one spi_clk cycle
     parameter BIT_DUR = 2,
     parameter INPUT_BYTE_STORE = 250, // maximum store data in interface before send data
-    parameter OUTPUT_BYTE_STORE = 1
+    parameter OUTPUT_BYTE_STORE = 2
 )( 
     input wire clk, 
     input wire nrst,
