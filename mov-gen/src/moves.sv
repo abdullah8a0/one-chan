@@ -87,10 +87,10 @@ module moves(
             6'b111010: return piece == KNIGHT;
 
             6'b111111: return piece == KING || piece == QUEEN || piece == BISHOP;
-            6'b111100: return piece == KNIGHT;
+            6'b111110: return piece == KNIGHT;
 
             // x = -2, y = 0, 1, 2, -1, -2
-            6'b100000: return piece == QUEEN || piece == ROOK;
+            6'b110000: return piece == QUEEN || piece == ROOK;
 
             6'b110001: return piece == KNIGHT;
             6'b110010: return piece == QUEEN || piece == BISHOP;
@@ -156,7 +156,7 @@ module moves(
                         no_move <= 1;
                     end else begin
                         // if color to move found then move to move state
-                        if (board[from_reg][7:6] != top_col) begin
+                        if (board[from_reg][7:6] == top_col) begin
                             // if any of dx, dx is -2 or 2 then move to move2
                             if (dx == 3'b110 || dx == 3'b010 || dy == 3'b110 || dy == 3'b010) begin
                                 state <= MOVE2;
@@ -171,59 +171,65 @@ module moves(
                         end
                         
                     end
+                    move_out_valid <= 0;
                 end
                 MOVE1: begin
                     if (dx == 3'b001 && dy == 3'b001) begin
                         dx <= 3'b110;
                         dy <= 3'b110;
                         state <= MOVE2;
-                    end else begin // increment to
-                        if (dx == 3'b001) begin
-                            dx <= 3'b111;
-                            dy <= dy + 1;
+                        
+                    end else if (dx == 3'b001) begin
+                        dx <= 3'b111;
+                        dy <= dy + 1;
+                    end else begin
+                        dx <= dx + 1;
+                    end
+                    if (in_bounds(from_reg,dx,dy)) begin
+                        if (target_xy(board[from_reg][5:0], dx, dy)) begin
+                            move_out_valid <= 1;
+                            move_out <= {from_reg, from_reg[5:3] + dy, from_reg[2:0] + dx};
+                            //fill spi_host here
+                            // set delta_out
+                            delta_out <= {dy+1'b1,(dx == 3'b001) ? 3'b111 :  dx+1'b1};
                         end else begin
-                            dx <= dx + 1;
+                            move_out_valid <= 0;
                         end
-                        if (in_bounds(from_reg,dx,dy)) begin
-                            if (target_xy(board[from_reg][5:0], dx, dy)) begin
-                                move_out_valid <= 1;
-                                move_out <= {from_reg, from_reg[5:3] + dy, from_reg[2:0] + dx};
-                                state <= IDLE; // only need one move
-                                // set delta_out
-                                delta_out <= {dy+1'b1,(dx == 3'b001) ? 3'b111 :  dx+1'b1};
-                            end
-                        end
+                    end else begin
+                        move_out_valid <= 0;
                     end
                 end
                 MOVE2: begin
                     if (dx == 3'b010 && dy == 3'b010) begin
                         from_reg <= from_reg + 1;
                         state <= SEARCH;
-                    end else begin // increment to
-                        if (dx == 3'b010) begin
-                            dx <= 3'b110;
-                            dy <= dy + 1;
+                    end else if (dx == 3'b010) begin
+                        dx <= 3'b110;
+                        dy <= dy + 1;
+                    end else begin
+                        // dy = -2,2. Do dx = -2,-1,0,1,2
+                        // otherwise do dx = -2,0,2
+                        if (dy == 3'b110 || dy == 3'b010) begin
+                            dx <= dx + 1;
                         end else begin
-                            // dy = -2,2. Do dx = -2,-1,0,1,2
-                            // otherwise do dx = -2,0,2
-                            if (dy == 3'b110 || dy == 3'b010) begin
-                                dx <= dx + 1;
-                            end else begin
-                                dx <= dx + 2;
-                            end
+                            dx <= dx + 4;
                         end
-                        if (in_bounds(from_reg,dx,dy)) begin
-                            // TODO: check here for blockage
-                            if (target_xy(board[from_reg][5:0], dx, dy)) begin
-                                move_out_valid <= 1;
-                                move_out <= {from_reg, from_reg[5:3] + dy, from_reg[2:0] + dx};
-                                state <= IDLE; // only need one move
-                                // set delta_out
+                    end
+                    if (in_bounds(from_reg,dx,dy)) begin
+                        // TODO: check here for blockage
+                        if (target_xy(board[from_reg][5:0], dx, dy)) begin
+                            move_out_valid <= 1;
+                            move_out <= {from_reg, from_reg[5:3] + dy, from_reg[2:0] + dx};
+                            // fill spi_host here
+                            // set delta_out
 
-                                delta_out <= (dx == 3'b010) ? {dy+1'b1,3'b110} : ( (dy == 3'b010 || dy == 3'b110) ? {dy,dx+1'b1} : {dy,dx+2'b10});
+                            delta_out <= (dx == 3'b010) ? {dy+1'b1,3'b110} : ( (dy == 3'b010 || dy == 3'b110) ? {dy,dx+1'b1} : {dy,dx+2'b10});
 
-                            end
+                        end else begin
+                            move_out_valid <= 0;
                         end
+                    end else begin
+                        move_out_valid <= 0;
                     end
                 end
         endcase 

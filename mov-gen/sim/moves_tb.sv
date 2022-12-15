@@ -89,7 +89,7 @@ module moves_tb;
         assign board[26] = {WHITE, EMPTY};
         assign board[27] = {WHITE, EMPTY};
         assign board[28] = {WHITE, EMPTY};
-        assign board[29] = {BLACK, ROOK};
+        assign board[29] = {BLACK, KNIGHT};
         assign board[30] = {WHITE, EMPTY};
         assign board[31] = {WHITE, EMPTY};
         assign board[32] = {WHITE, EMPTY};
@@ -153,7 +153,7 @@ module moves_tb;
 
         // stack_top = 16'b0111010000000000;
         // delta = 6'b111001;
-        #400;
+        #4000;
         
 
         $finish;

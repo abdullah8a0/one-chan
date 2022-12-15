@@ -176,7 +176,7 @@ module top_level(
         .sp(sp_out)
     );
     traverse trav_inst (
-        .clk(clk_in),
+        .clk(0),
         .rst(grst),
 
         // mov-gen interface 
@@ -194,6 +194,8 @@ module top_level(
         
         .best_move_out()//led)// TODO add led output
     );
+
+    sender send_inst
 
     stack stack_inst (
         .clk(clk_in),
@@ -287,6 +289,42 @@ module top_level(
 
 endmodule
 
+
+module sender (
+    input wire clk,
+    input wire rst,
+    input wire [15:0] board,
+    input wire [5:0] move,
+    input wire move_valid,
+    input wire no_move
+    );
+
+    logic load_iv;
+    logic [7:0] load_id;
+
+    logic [1:0] state;
+
+    logic [7:0] move_buf [255:0];
+    localparam IDLE = 2'b00; // fills board
+    localparam MOV_RCV = 2'b01; // buffers move
+    localparam MOV_SEND = 2'b10; // sends move
+
+
+    spi_host spi_host_inst(
+        .clk(clk),
+        .nrst(~rst),
+        .load_iv(load_iv),
+        .load_id(load_id),
+    
+        .clk_out(),
+        .sel_out(),
+        .data_out()
+    );
+    // fill the load_id with the board
+
+
+
+endmodule
 
 
 module debouncer #(parameter CLK_PERIOD_NS = 10,
